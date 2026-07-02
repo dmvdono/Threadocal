@@ -83,6 +83,10 @@ footer a:hover {
   color: var(--green);
 }
 
+
+/* GitHub-ready shared polish */
+.nav a{position:relative;padding:8px 0;transition:color .2s ease, transform .2s ease, opacity .2s ease}.nav a:after{content:"";position:absolute;left:0;right:0;bottom:1px;height:3px;border-radius:999px;background:var(--green);transform:scaleX(0);transform-origin:center;transition:transform .2s ease}.nav a:hover{opacity:1;color:#173a14;transform:translateY(-2px)}.nav a:hover:after,.nav a.active:after{transform:scaleX(1)}.nav a.active{opacity:1;color:#173a14}.logo img,.brand img{background:transparent!important;border:0!important;box-shadow:none!important}.logo:hover,.brand:hover{filter:drop-shadow(0 0 12px rgba(148,255,25,.35))}
+
 </style>
 </head>
 <body>
@@ -392,40 +396,78 @@ footer a:hover {
   <dialog id="dealDialog"><form method="dialog"><button class="close">×</button><h2>Deal alerts</h2><p>Get notified about local drops, discount codes, loyalty rewards, and giveaways.</p><input placeholder="Email or phone" /><button class="notify">Notify me</button></form></dialog>
   <script>
 const brands = [
-  {name:'District Stitch Co.', city:'Washington, DC', zip:'20001', miles:2.4, cat:'menswear', rating:4.8, reviews:126, partnered:true, tags:['Heavyweight Streetwear','Pickup']},
-  {name:'Southside Supply', city:'Atlanta, GA', zip:'30303', miles:3.2, cat:'menswear', rating:4.7, reviews:211, partnered:true, tags:['Urban Essentials','Sale']},
-  {name:'Parallel Vintage', city:'Austin, TX', zip:'78701', miles:4.9, cat:'seasonal', rating:4.9, reviews:77, partnered:true, tags:['Vintage Reimagined']},
-  {name:'Nova Wave', city:'Los Angeles, CA', zip:'90012', miles:5.1, cat:'womenswear', rating:4.8, reviews:184, partnered:true, tags:['Y2K','Contemporary']},
-  {name:'Concrete Culture', city:'Chicago, IL', zip:'60601', miles:6.4, cat:'sportswear', rating:4.6, reviews:92, partnered:false, tags:['Streetwear Collective']},
-  {name:'Born Local Co.', city:'Miami, FL', zip:'33101', miles:7.2, cat:'sale', rating:4.9, reviews:158, partnered:true, tags:['Made in Miami']},
-  {name:'Rappahannock Threads', city:'Fredericksburg, VA', zip:'22401', miles:1.8, cat:'womenswear', rating:4.6, reviews:52, partnered:true, tags:['Handmade','Local pickup']},
-  {name:'Valley Mini Fits', city:'Phoenix, AZ', zip:'85016', miles:8.9, cat:'kidswear', rating:4.8, reviews:38, partnered:true, tags:['Kidswear','Gift cards']}
+  {name:'District Stitch Co.', city:'Washington, DC', zip:'20001', lat:38.9101, lon:-77.0147, cat:'menswear', rating:4.8, reviews:126, partnered:true, tags:['Heavyweight Streetwear','Pickup']},
+  {name:'Brookland Basics', city:'Washington, DC', zip:'20017', lat:38.9364, lon:-76.9947, cat:'menswear', rating:4.7, reviews:89, partnered:true, tags:['Local pickup','Essentials']},
+  {name:'NoMa Stitch Lab', city:'Washington, DC', zip:'20002', lat:38.9087, lon:-76.9989, cat:'womenswear', rating:4.6, reviews:64, partnered:false, tags:['Capsules','Pickup']},
+  {name:'Rappahannock Threads', city:'Fredericksburg, VA', zip:'22401', lat:38.3032, lon:-77.4605, cat:'womenswear', rating:4.6, reviews:52, partnered:true, tags:['Handmade','Local pickup']},
+  {name:'Southside Supply', city:'Atlanta, GA', zip:'30303', lat:33.7550, lon:-84.3900, cat:'menswear', rating:4.7, reviews:211, partnered:true, tags:['Urban Essentials','Sale']},
+  {name:'Parallel Vintage', city:'Austin, TX', zip:'78701', lat:30.2711, lon:-97.7437, cat:'seasonal', rating:4.9, reviews:77, partnered:true, tags:['Vintage Reimagined']},
+  {name:'Nova Wave', city:'Los Angeles, CA', zip:'90012', lat:34.0614, lon:-118.2385, cat:'womenswear', rating:4.8, reviews:184, partnered:true, tags:['Y2K','Contemporary']},
+  {name:'Concrete Culture', city:'Chicago, IL', zip:'60601', lat:41.8864, lon:-87.6186, cat:'sportswear', rating:4.6, reviews:92, partnered:false, tags:['Streetwear Collective']},
+  {name:'Born Local Co.', city:'Miami, FL', zip:'33101', lat:25.7752, lon:-80.2086, cat:'sale', rating:4.9, reviews:158, partnered:true, tags:['Made in Miami']},
+  {name:'Valley Mini Fits', city:'Phoenix, AZ', zip:'85016', lat:33.5077, lon:-112.0473, cat:'kidswear', rating:4.8, reviews:38, partnered:true, tags:['Kidswear','Gift cards']}
 ];
+
+const locationIndex = {
+  '20001': {label:'Washington, DC 20001', lat:38.9101, lon:-77.0147},
+  '20002': {label:'Washington, DC 20002', lat:38.9087, lon:-76.9989},
+  '20010': {label:'Washington, DC 20010', lat:38.9339, lon:-77.0299},
+  '20017': {label:'Washington, DC 20017', lat:38.9364, lon:-76.9947},
+  '22401': {label:'Fredericksburg, VA 22401', lat:38.3032, lon:-77.4605},
+  '30303': {label:'Atlanta, GA 30303', lat:33.7550, lon:-84.3900},
+  '78701': {label:'Austin, TX 78701', lat:30.2711, lon:-97.7437},
+  '90012': {label:'Los Angeles, CA 90012', lat:34.0614, lon:-118.2385},
+  '60601': {label:'Chicago, IL 60601', lat:41.8864, lon:-87.6186},
+  '33101': {label:'Miami, FL 33101', lat:25.7752, lon:-80.2086},
+  '85016': {label:'Phoenix, AZ 85016', lat:33.5077, lon:-112.0473},
+  'washington': {label:'Washington, DC', lat:38.9072, lon:-77.0369},
+  'dc': {label:'Washington, DC', lat:38.9072, lon:-77.0369},
+  'fredericksburg': {label:'Fredericksburg, VA', lat:38.3032, lon:-77.4605},
+  'atlanta': {label:'Atlanta, GA', lat:33.7490, lon:-84.3880},
+  'austin': {label:'Austin, TX', lat:30.2672, lon:-97.7431},
+  'los angeles': {label:'Los Angeles, CA', lat:34.0522, lon:-118.2437},
+  'chicago': {label:'Chicago, IL', lat:41.8781, lon:-87.6298},
+  'miami': {label:'Miami, FL', lat:25.7617, lon:-80.1918},
+  'phoenix': {label:'Phoenix, AZ', lat:33.4484, lon:-112.0740}
+};
 
 let activeCategory = 'all';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
-function estimateBase(query){
+function milesBetween(a, b){
+  const R = 3958.8;
+  const toRad = n => n * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLon = toRad(b.lon - a.lon);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function getSearchLocation(query){
   const q = query.trim().toLowerCase();
-  if(!q) return brands;
-  const exact = brands.filter(b => b.zip === q);
-  if(exact.length) return exact.concat(brands.filter(b => b.zip !== q));
-  const matches = brands.filter(b => (`${b.name} ${b.city} ${b.zip} ${b.tags.join(' ')}`).toLowerCase().includes(q));
-  return matches.concat(brands.filter(b => !matches.includes(b)));
+  if(!q) return locationIndex['20017'];
+  if(locationIndex[q]) return locationIndex[q];
+  const matchingBrand = brands.find(b => (`${b.name} ${b.city} ${b.zip} ${b.tags.join(' ')}`).toLowerCase().includes(q));
+  if(matchingBrand) return {label: matchingBrand.city, lat: matchingBrand.lat, lon: matchingBrand.lon};
+  return null;
 }
 
 function renderResults(){
   const query = $('#locationInput')?.value || $('#globalSearch')?.value || '';
   const partneredOnly = $('#partneredOnly')?.checked;
   const radius = Number($('#radiusFilter')?.value || 5000);
-  let list = estimateBase(query).map((b,i)=>({...b, displayMiles: query ? b.miles + (i * 2.2) : b.miles}));
+  const origin = getSearchLocation(query);
+  let list = brands.map(b => ({...b, displayMiles: origin ? milesBetween(origin, b) : b.miles || 0}));
   if(activeCategory !== 'all') list = list.filter(b => b.cat === activeCategory || b.tags.join(' ').toLowerCase().includes(activeCategory));
   if(partneredOnly) list = list.filter(b => b.partnered);
   list = list.filter(b => b.displayMiles <= radius).sort((a,b)=>a.displayMiles-b.displayMiles);
-  $('#resultCount').textContent = `${list.length} brand${list.length === 1 ? '' : 's'}`;
+  const countText = `${list.length} brand${list.length === 1 ? '' : 's'}`;
+  $('#resultCount').textContent = origin ? `${countText} near ${origin.label}` : `${countText} · search location not recognized`;
   $('#brandResults').innerHTML = list.map(b => `
-    <article class="brand-card">
+    <a class="brand-card" href="product-page.html" aria-label="View ${b.name} product page">
       <span class="heart">♡</span>
       <div class="brand-art">${b.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
       <span class="location-pill">${b.city}</span>
@@ -434,7 +476,7 @@ function renderResults(){
         <p>${b.tags[0]} · ${b.displayMiles.toFixed(1)} mi · ${b.partnered ? 'Partnered' : 'Independent'}</p>
         <strong class="rating">${b.rating}</strong>
       </div>
-    </article>`).join('') || '<p>No brands found. Try Everywhere or another city/ZIP.</p>';
+    </a>`).join('') || '<p>No brands found in that radius. Try “Everywhere” or another city/ZIP.</p>';
 }
 
 function setCategory(cat){

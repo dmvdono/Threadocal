@@ -1,11 +1,11 @@
-Threadocal Full Website Package
+Threadocal Full Website Package - Logo/Search Fixed
 
-Open index.html first.
+Open index.html to view the homepage.
 
-Update included:
-- Every HTML page now includes a Home link in the main navigation bar.
-- Home links back to index.html.
-- The Threadocal logo also links back to index.html.
-- Navigation links now have hover underline animation and active-page styling.
+Latest fixes:
+- Added assets/threadocal-logo.png so the logo no longer appears broken on Vercel.
+- Updated the homepage search to calculate distance using mock ZIP/city coordinates instead of fake distance ordering.
+- Product cards now link to product-page.html.
 
-Upload this whole folder to GitHub when ready.
+Deployment:
+Upload all files and the assets folder to GitHub, then Vercel will automatically redeploy.
