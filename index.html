@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Threadocal | Support Local. Wear Different.</title>
+  <meta name="description" content="Threadocal connects shoppers with independent clothing brands by ZIP code, city, category, pickup radius, reviews, and promotions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+:root{--green:#94ff19;--green2:#28d12d;--dark:#050705;--panel:#111511;--panel2:#1a2019;--white:#f6f8f3;--muted:#b8c1b6;--line:rgba(255,255,255,.16);--shadow:0 30px 90px rgba(0,0,0,.45)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;background:#050705;color:var(--white);overflow-x:hidden}body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 72% 8%,rgba(148,255,25,.28),transparent 26%),radial-gradient(circle at 12% 40%,rgba(40,209,45,.14),transparent 22%),linear-gradient(180deg,#0b0d0b,#050705 70%);z-index:-3}.noise{position:fixed;inset:0;pointer-events:none;opacity:.08;background-image:linear-gradient(45deg,rgba(255,255,255,.1) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,.08) 25%,transparent 25%);background-size:5px 5px;z-index:-2}a{color:inherit;text-decoration:none}button,input,select{font:inherit}.threadbar{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:auto auto minmax(220px,1fr) auto;gap:24px;align-items:center;padding:14px 42px;background:rgba(255,255,255,.94);color:#050705;box-shadow:0 12px 50px rgba(0,0,0,.18);backdrop-filter:blur(18px)}.brand{display:flex;align-items:center;gap:13px;font-family:Anton,Impact,sans-serif;font-size:2rem;letter-spacing:.03em}.brand img{width:50px;height:50px;object-fit:contain;display:block}.main-nav{display:flex;gap:28px;font-weight:800}.main-nav a{white-space:nowrap}.top-search{height:46px;display:flex;align-items:center;gap:10px;border:1px solid #d9ded8;border-radius:999px;background:#f9faf8;padding:0 16px}.top-search input{border:0;outline:0;background:transparent;width:100%;font-weight:600}.nav-actions{display:flex;align-items:center;gap:10px}.signup,.login,.nav-actions button{border:0;border-radius:999px;min-height:44px;padding:0 18px;font-weight:900;cursor:pointer}.signup{display:grid;place-items:center;background:var(--green);color:#050705}.login{background:#050705;color:white}.nav-actions button{position:relative;background:#f4f5f2;font-size:1.6rem}.nav-actions b{position:absolute;right:4px;top:2px;background:var(--green);color:#050705;border-radius:50%;font-size:.7rem;width:18px;height:18px;display:grid;place-items:center}.hero{position:relative;min-height:720px;padding:78px clamp(22px,6vw,112px) 40px;display:grid;grid-template-columns:minmax(340px,.9fr) minmax(360px,1fr);gap:48px;align-items:start;overflow:hidden;background:linear-gradient(110deg,rgba(0,0,0,.96),rgba(0,0,0,.72) 50%,rgba(0,0,0,.88)),radial-gradient(circle at 65% 36%,rgba(148,255,25,.55),transparent 24%)}.hero:after{content:"";position:absolute;inset:auto -10% 0 -10%;height:170px;background:linear-gradient(0deg,#050705,transparent);pointer-events:none}.hero-bg-mark{position:absolute;right:10%;top:80px;opacity:.6;filter:drop-shadow(0 0 35px rgba(148,255,25,.6));transform:rotate(-6deg)}.hero-bg-mark img{width:min(310px,28vw)}.eyebrow{color:var(--green);font-weight:1000;text-transform:uppercase;letter-spacing:.08em;margin:0 0 14px}.hero h1{font-family:Anton,Impact,sans-serif;font-size:clamp(4rem,8vw,8.8rem);line-height:.88;margin:0;text-transform:uppercase;letter-spacing:.02em;text-shadow:0 8px 0 rgba(255,255,255,.07)}.hero h1 span{display:block;color:white}.hero h1 strong{display:block;color:var(--green);font-weight:400}.hero-text{max-width:560px;color:#e1e6df;font-size:1.15rem;line-height:1.65}.hero-visual{position:relative;height:440px;margin-top:20px}.model-card{position:absolute;border:1px solid rgba(255,255,255,.18);border-radius:34px;box-shadow:var(--shadow);overflow:hidden}.model-card:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,#283125,#070807 58%,#9cff1b);opacity:.9}.model-card:after{content:"";position:absolute;inset:34px 50px 0;background:linear-gradient(180deg,#222,#111);clip-path:polygon(10% 0,38% 0,41% 12%,59% 12%,62% 0,90% 0,100% 30%,78% 42%,68% 31%,50% 100%,32% 31%,22% 42%,0 30%);border:12px solid var(--green);filter:drop-shadow(0 0 25px rgba(148,255,25,.45))}.model-card span{position:absolute;left:18px;bottom:18px;z-index:2;background:rgba(0,0,0,.62);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:900}.model-one{left:0;top:40px;width:280px;height:360px;transform:rotate(-3deg)}.model-two{right:80px;top:0;width:300px;height:430px;transform:rotate(3deg)}.stat-panel{position:absolute;right:0;top:90px;width:250px;padding:18px;border:1px solid rgba(255,255,255,.18);border-radius:22px;background:rgba(18,21,18,.72);backdrop-filter:blur(20px);box-shadow:var(--shadow)}.stat-panel p{display:grid;grid-template-columns:42px 1fr;gap:10px;margin:0 0 16px}.stat-panel p:before{content:"✩";grid-row:1/3;width:36px;height:36px;border-radius:12px;background:rgba(148,255,25,.18);color:var(--green);display:grid;place-items:center}.stat-panel strong{font-size:1.2rem}.stat-panel span{color:var(--muted)}.find-panel{position:relative;z-index:3;grid-column:1/-1;display:grid;grid-template-columns:1fr 1.1fr .62fr .62fr;gap:14px;align-items:center;margin-top:-10px;padding:18px 20px;border:1px solid rgba(255,255,255,.18);border-radius:24px;background:linear-gradient(180deg,rgba(30,35,30,.92),rgba(12,13,12,.92));box-shadow:var(--shadow);backdrop-filter:blur(20px)}.panel-title{display:flex;gap:14px;align-items:center}.panel-title>span,.panel-btn span{width:52px;height:52px;border-radius:50%;background:var(--green);color:#050705;display:grid;place-items:center;font-weight:1000;font-size:1.4rem}.panel-title strong{display:block;text-transform:uppercase;font-size:1.05rem}.panel-title small,.panel-btn small{display:block;color:var(--muted);margin-top:3px}.location-search{display:grid;grid-template-columns:1fr 140px;background:#111511;border:1px solid var(--line);border-radius:18px;overflow:hidden}.location-search input{min-height:62px;border:0;outline:0;background:transparent;color:white;padding:0 22px;font-weight:700}.location-search button{border:0;background:var(--green);font-weight:1000;cursor:pointer}.panel-btn{min-height:62px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.05);color:white;padding:8px 16px;display:flex;align-items:center;gap:12px;text-align:left;font-weight:900;cursor:pointer}.panel-btn span{width:42px;height:42px}.category-strip{max-width:1440px;margin:-20px auto 0;position:relative;z-index:5;display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,#1b1f1b,#101210);overflow:hidden}.tab{border:0;border-right:1px solid var(--line);padding:18px 10px;background:transparent;color:#e9eee8;font-weight:900;cursor:pointer}.tab.active,.tab:hover{background:var(--green);color:#050705}.brands-section,.promo-grid,.how,.owner-section,.signup-section,footer{max-width:1440px;margin:34px auto;padding:0 32px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:14px}.section-head h2,.promo h2,.owner-section h2,.signup-section h2{font-family:Anton,Impact,sans-serif;font-size:clamp(2rem,4vw,4rem);line-height:.95;margin:0;text-transform:uppercase;letter-spacing:.02em}.section-head a{color:var(--green);font-weight:1000}.filters-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:var(--muted);margin-bottom:20px}.filters-row select{background:#111511;color:white;border:1px solid var(--line);border-radius:999px;padding:10px 14px}.brand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.brand-card{position:relative;min-height:310px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.18);background:#111;box-shadow:0 20px 50px rgba(0,0,0,.32);transition:.25s transform,.25s border-color}.brand-card:hover{transform:translateY(-6px);border-color:var(--green)}.brand-art{height:205px;background:linear-gradient(135deg,#303830,#0b0d0b 45%,#9cff1b);position:relative;display:grid;place-items:center;font-family:Anton;font-size:5rem;color:rgba(255,255,255,.16)}.brand-art:after{content:"";position:absolute;width:155px;height:175px;border:10px solid var(--green);clip-path:polygon(10% 0,38% 0,41% 12%,59% 12%,62% 0,90% 0,100% 30%,78% 42%,68% 31%,50% 100%,32% 31%,22% 42%,0 30%);background:rgba(255,255,255,.05);filter:drop-shadow(0 0 20px rgba(148,255,25,.45))}.location-pill{position:absolute;left:12px;top:172px;z-index:2;background:#050705;color:white;border-radius:999px;padding:6px 10px;font-size:.78rem;font-weight:900}.location-pill:before{content:"●";color:var(--green);margin-right:5px}.brand-info{background:#f4f5f2;color:#050705;padding:14px}.brand-info h3{margin:0 0 6px;font-size:1.08rem}.brand-info p{margin:0;color:#4d544d;font-size:.88rem}.rating{position:absolute;right:12px;bottom:42px;color:#050705;font-weight:1000}.rating:after{content:" ★";color:#15951a}.heart{position:absolute;right:14px;top:14px;z-index:3;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.35);display:grid;place-items:center;font-size:1.4rem}.promo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}.promo{min-height:220px;border-radius:22px;padding:28px;border:1px solid rgba(255,255,255,.16);overflow:hidden;position:relative;box-shadow:var(--shadow)}.promo:after{content:"";position:absolute;right:-20px;bottom:-50px;width:230px;height:230px;background:url('assets/threadocal-logo.png') center/contain no-repeat;opacity:.36;filter:drop-shadow(0 0 30px rgba(148,255,25,.6))}.promo small{color:var(--green);font-weight:1000}.promo p{max-width:390px;line-height:1.5}.promo a,.promo button,.signup-section button,.notify{display:inline-block;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:transparent;color:inherit;padding:12px 18px;font-weight:1000;cursor:pointer}.promo.bright{background:linear-gradient(135deg,var(--green),#43d51d);color:#050705}.promo.bright small{color:#173c09}.promo.dark{background:linear-gradient(135deg,#171a17,#080908)}.promo.gift{background:linear-gradient(135deg,#1b4018,#070807)}.how{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,#171b17,#0e100e);overflow:hidden}.mini-feature{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:center;padding:18px;border-right:1px solid var(--line)}.mini-feature span{grid-row:1/3;color:var(--green);font-size:2rem}.mini-feature small{color:var(--muted)}.owner-section{display:grid;grid-template-columns:.95fr 1.05fr;gap:28px;align-items:center;padding-top:50px}.owner-section p{color:var(--muted);line-height:1.65}.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.plan-grid article{border:1px solid var(--line);background:linear-gradient(180deg,#171b17,#0e100e);border-radius:22px;padding:22px}.plan-grid .highlight{border-color:var(--green);box-shadow:0 0 0 4px rgba(148,255,25,.16)}.plan-grid strong{color:var(--green);font-size:2rem}.signup-section{display:grid;grid-template-columns:1fr 1fr;gap:18px}.signup-section article{border-radius:24px;padding:30px;background:#f4f5f2;color:#050705}.signup-section article:nth-child(2){background:var(--green)}.signup-section button{background:#050705;color:white}footer{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;padding-top:44px;padding-bottom:44px;border-top:1px solid var(--line);color:#dfe8dc}footer a{display:block;color:var(--muted);margin:8px 0}dialog{border:0;border-radius:28px;padding:0;box-shadow:var(--shadow);max-width:430px;background:#111511;color:white}dialog::backdrop{background:rgba(0,0,0,.65)}dialog form{padding:28px}.close{float:right;border:0;background:transparent;color:white;font-size:1.8rem}dialog input{width:100%;border:1px solid var(--line);background:#050705;color:white;border-radius:14px;padding:14px;margin:14px 0}.notify{background:var(--green);color:#050705;border:0}@media(max-width:1120px){.threadbar{grid-template-columns:auto 1fr auto}.main-nav{display:none}.top-search{grid-column:1/-1}.hero{grid-template-columns:1fr}.find-panel{grid-template-columns:1fr}.hero-visual{display:none}.category-strip{grid-template-columns:repeat(3,1fr);margin:22px}.brand-grid{grid-template-columns:repeat(2,1fr)}.promo-grid,.owner-section,.signup-section{grid-template-columns:1fr}.how{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.threadbar{padding:12px 14px;grid-template-columns:1fr auto}.brand span{font-size:1.5rem}.brand img{width:42px;height:42px}.nav-actions .signup,.nav-actions .login{display:none}.hero{padding:46px 20px}.hero h1{font-size:4rem}.find-panel{padding:14px}.location-search{grid-template-columns:1fr}.location-search button{min-height:52px}.category-strip{grid-template-columns:1fr 1fr;border-radius:18px}.brands-section,.promo-grid,.how,.owner-section,.signup-section,footer{padding-left:18px;padding-right:18px}.brand-grid,.plan-grid,.how,footer{grid-template-columns:1fr}.section-head{display:block}.mini-feature{border-right:0;border-bottom:1px solid var(--line)}}
+
+
+/* Account signup pages */
+.account-page{max-width:1440px;margin:50px auto;padding:40px 32px;border-top:1px solid var(--line)}
+.back-btn{border:1px solid var(--line);background:rgba(255,255,255,.06);color:white;border-radius:999px;padding:12px 18px;font-weight:900;cursor:pointer;margin-bottom:28px}.back-btn:hover{background:var(--green);color:#050705}.account-hero{min-height:360px;border-radius:32px;padding:46px;background:radial-gradient(circle at 85% 20%,rgba(148,255,25,.45),transparent 28%),linear-gradient(135deg,#111511,#050705);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;position:relative}.account-hero:after{content:"";position:absolute;right:-35px;bottom:-70px;width:300px;height:300px;border:18px solid rgba(148,255,25,.5);clip-path:polygon(10% 0,38% 0,41% 12%,59% 12%,62% 0,90% 0,100% 30%,78% 42%,68% 31%,50% 100%,32% 31%,22% 42%,0 30%);filter:drop-shadow(0 0 25px rgba(148,255,25,.45))}.account-hero.brand-version{background:radial-gradient(circle at 85% 20%,rgba(148,255,25,.55),transparent 28%),linear-gradient(135deg,#173a14,#050705)}.account-hero h2{font-family:Anton,Impact,sans-serif;font-size:clamp(3rem,7vw,7rem);line-height:.9;text-transform:uppercase;margin:0;max-width:900px}.account-hero p{max-width:720px;color:var(--muted);font-size:1.1rem;line-height:1.7}.account-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:24px 0}.account-grid article{background:linear-gradient(180deg,#171b17,#0e100e);border:1px solid var(--line);border-radius:22px;padding:24px}.account-grid span{width:48px;height:48px;display:grid;place-items:center;background:var(--green);color:#050705;border-radius:16px;font-size:1.5rem;font-weight:1000}.account-grid p{color:var(--muted);line-height:1.6}.portal-form{background:#f4f5f2;color:#050705;border-radius:28px;padding:28px;display:grid;gap:14px}.portal-form h3{font-size:2rem;margin:0}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.portal-form input,.portal-form select{width:100%;border:1px solid #d8ddd6;border-radius:16px;padding:16px;background:white;color:#050705;outline:0}.portal-form input:focus,.portal-form select:focus{border-color:#78d914;box-shadow:0 0 0 4px rgba(148,255,25,.25)}.checkbox-line{display:flex;gap:10px;align-items:center;font-weight:800;color:#273027}.checkbox-line input{width:auto}.portal-form button{border:0;background:#050705;color:white;border-radius:999px;padding:16px;font-weight:1000;cursor:pointer}.portal-form button:hover{background:#173a14}@media(max-width:900px){.account-grid{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}}@media(max-width:650px){.account-page{padding:24px 18px}.account-hero{padding:30px}.account-grid{grid-template-columns:1fr}.account-hero:after{width:190px;height:190px;right:-45px;bottom:-45px}}
+
+
+
+/* Footer information pages */
+.info-pages-wrap{max-width:1440px;margin:34px auto;padding:0 32px}.info-page{padding:34px 0 64px}.info-hero{position:relative;overflow:hidden;min-height:320px;border:1px solid var(--line);border-radius:32px;background:radial-gradient(circle at 82% 20%,rgba(148,255,25,.45),transparent 30%),linear-gradient(135deg,#141914,#050705);box-shadow:var(--shadow);padding:44px}.info-hero:after{content:"";position:absolute;right:-70px;bottom:-100px;width:340px;height:340px;background:url('assets/threadocal-logo.png') center/contain no-repeat;opacity:.28;filter:drop-shadow(0 0 35px rgba(148,255,25,.6))}.info-hero h1{font-family:Anton,Impact,sans-serif;font-size:clamp(3rem,7vw,7rem);line-height:.9;text-transform:uppercase;margin:0;max-width:920px}.info-hero p{position:relative;z-index:1;max-width:760px;color:var(--muted);font-size:1.1rem;line-height:1.7}.back-home{border:1px solid var(--line);background:rgba(255,255,255,.06);color:white;border-radius:999px;padding:12px 18px;font-weight:1000;cursor:pointer;margin-bottom:22px}.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}.info-card{border:1px solid var(--line);background:linear-gradient(180deg,#171b17,#0e100e);border-radius:24px;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.18)}.info-card h2,.info-card h3{margin-top:0}.info-card p,.info-card li{color:var(--muted);line-height:1.65}.info-card ul{padding-left:18px}.wide-card{grid-column:span 2}.info-form{display:grid;gap:12px}.info-form input,.info-form textarea,.info-form select{width:100%;border:1px solid rgba(255,255,255,.16);background:#050705;color:white;border-radius:14px;padding:14px}.info-form textarea{min-height:120px}.info-form button,.copy-code{border:0;border-radius:999px;background:var(--green);color:#050705;font-weight:1000;padding:14px 18px;cursor:pointer}.status-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(148,255,25,.12);color:var(--green);border:1px solid rgba(148,255,25,.35);border-radius:999px;padding:8px 12px;font-weight:900}.blank-state{min-height:280px;display:grid;place-items:center;text-align:center;border:1px dashed rgba(148,255,25,.35);border-radius:24px;background:rgba(148,255,25,.05);margin-top:22px}.blank-state h2{font-family:Anton,Impact,sans-serif;text-transform:uppercase;font-size:clamp(2.5rem,6vw,6rem);margin:0;color:var(--green)}.footer-page-link{cursor:pointer}.footer-page-link:hover{color:var(--green)}@media(max-width:900px){.info-grid{grid-template-columns:1fr 1fr}.wide-card{grid-column:span 1}}@media(max-width:650px){.info-pages-wrap{padding:0 18px}.info-hero{padding:28px}.info-grid{grid-template-columns:1fr}}
+
+
+
+/* Threadocal navigation polish: home link + hover states */
+.main-nav a,
+.brand,
+.signup,
+.login,
+.nav-actions button,
+.panel-btn,
+.promo a,
+.promo button,
+.signup-section button,
+.info-card a,
+footer a {
+  transition: color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.main-nav a {
+  position: relative;
+  padding: 10px 0;
+}
+.main-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--green);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+.main-nav a:hover,
+.main-nav a.active {
+  color: #173a14;
+}
+.main-nav a:hover::after,
+.main-nav a.active::after {
+  transform: scaleX(1);
+}
+.brand:hover,
+.signup:hover,
+.login:hover,
+.nav-actions button:hover,
+.panel-btn:hover,
+.promo a:hover,
+.promo button:hover,
+.signup-section button:hover,
+.info-card a:hover,
+footer a:hover {
+  transform: translateY(-2px);
+}
+.signup:hover,
+.location-search button:hover,
+.notify:hover {
+  box-shadow: 0 0 0 4px rgba(148,255,25,.22), 0 10px 24px rgba(148,255,25,.22);
+}
+footer a:hover {
+  color: var(--green);
+}
+
+</style>
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="threadbar">
+    <a class="brand" href="index.html" aria-label="Threadocal home">
+      <img src="assets/threadocal-logo.png" alt="Threadocal green shirt logo" />
+      <span>THREADOCAL</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html" class="active">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="brands.html">Brands</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="how-it-works.html">How It Works</a>
+    </nav>
+
+    <form class="top-search" id="topSearch" role="search">
+      <span aria-hidden="true">⌕</span>
+      <input id="globalSearch" type="search" placeholder="Search brands, products, city..." autocomplete="off" />
+    </form>
+
+    <div class="nav-actions">
+      <a class="signup" href="signup.html">Sign Up</a>
+      <button class="login" type="button">Log In</button>
+      <button id="openDeals" aria-label="Deal alerts">♡<b>0</b></button>
+      <button aria-label="Shopping bag">▢<b>0</b></button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-bg-mark"><img src="assets/threadocal-logo.png" alt="" /></div>
+      <div class="hero-copy">
+        <p class="eyebrow">Local fashion. National reach.</p>
+        <h1><span>Support local.</span><strong>Wear different.</strong></h1>
+        <p class="hero-text">Threadocal connects shoppers with independent clothing brands near them. Discover unique styles, support small businesses, and find local pickup options within your area.</p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="model-card model-one"><span>LOCAL DROP</span></div>
+        <div class="model-card model-two"><span>STREETWEAR</span></div>
+        <div class="stat-panel">
+          <p><strong>1,200+</strong><span>Local Brands</span></p>
+          <p><strong>50K+</strong><span>Happy Customers</span></p>
+          <p><strong>All 50 States</strong><span>One Local Community</span></p>
+        </div>
+      </div>
+
+      <div class="find-panel" id="find">
+        <div class="panel-title">
+          <span>⌖</span>
+          <div><strong>Find brands near you</strong><small>Search by ZIP code or city to find local clothing brands.</small></div>
+        </div>
+        <form class="location-search" id="locationSearch">
+          <input id="locationInput" placeholder="Enter ZIP code or city" />
+          <button type="submit">Search →</button>
+        </form>
+        <button class="panel-btn" type="button" id="useLocation"><span>◎</span> Use My Location <small>Find brands near you</small></button>
+        <a class="panel-btn" href="brands.html"><span>▰</span> Browse All Brands <small>Explore every brand</small></a>
+      </div>
+    </section>
+
+    <section class="category-strip" id="shop" aria-label="Shopping categories">
+      <button class="tab active" data-category="all">▦ All</button>
+      <button class="tab" data-category="menswear">👕 Menswear</button>
+      <button class="tab" data-category="womenswear">👗 Womenswear</button>
+      <button class="tab" data-category="kidswear">🧸 Kidswear</button>
+      <button class="tab" data-category="seasonal">❄ Seasonal</button>
+      <button class="tab" data-category="sportswear">◉ Sportswear</button>
+      <button class="tab" data-category="sale">🏷 Sale</button>
+    </section>
+
+    <section class="brands-section" id="brands">
+      <div class="section-head">
+        <div><p class="eyebrow">Featured local brands</p><h2>Independent drops near you</h2></div>
+        <a href="search.html">View all brands →</a>
+      </div>
+      <div class="filters-row">
+        <label><input type="checkbox" id="partneredOnly" /> Partnered brands only</label>
+        <select id="radiusFilter"><option value="10">10 miles</option><option value="25" selected>25 miles</option><option value="50">50 miles</option><option value="5000">Everywhere</option></select>
+        <span><strong id="resultCount">0 brands</strong> · sorted by distance</span>
+      </div>
+      <div id="brandResults" class="brand-grid"></div>
+    </section>
+
+    <section class="promo-grid" id="promotions">
+      <article class="promo bright"><small>FOR BRANDS</small><h2>Grow Your Brand</h2><p>Promote your clothing brand to thousands of local shoppers across the country.</p><a href="brand-signup.html">Join as a Brand →</a></article>
+      <article class="promo dark"><small>PROMOTE & SAVE</small><h2>Exclusive Deals</h2><p>Discover brand promotions, discount codes, giveaways, and special offers.</p><button onclick="window.location.href='promotions.html'">View Promotions →</button></article>
+      <article class="promo gift"><small>EARN REWARDS</small><h2>Loyalty Perks</h2><p>Create an account to earn rewards, unlock exclusive deals, and track orders.</p><a href="signup.html">Create Account →</a></article>
+    </section>
+
+    <section class="how" id="how">
+      <div class="mini-feature"><span>◎</span><strong>Shop Local</strong><small>Support small businesses</small></div>
+      <div class="mini-feature"><span>▱</span><strong>Pickup Nearby</strong><small>Many brands offer local pickup</small></div>
+      <div class="mini-feature"><span>▭</span><strong>Secure Payments</strong><small>$0.50 Threadocal fee concept</small></div>
+      <div class="mini-feature"><span>✩</span><strong>Real Reviews</strong><small>From real customers</small></div>
+    </section>
+
+    <section class="owner-section" id="brand-owner">
+      <div>
+        <p class="eyebrow">Company side</p>
+        <h2>Built for local clothing brands that want visibility.</h2>
+        <p>Free signup, monthly promotional services, customer pickup messages, sales insights, order tracking, promo codes, referral campaigns, loyalty programs, giveaways, and negotiable royalties.</p>
+      </div>
+      <div class="plan-grid">
+        <article><h3>Starter</h3><strong>Free</strong><p>Add your brand profile and get listed in search.</p></article>
+        <article class="highlight"><h3>Promote</h3><strong>$29/mo</strong><p>Featured placement, coupons, deal alerts, and referral campaigns.</p></article>
+        <article><h3>Growth</h3><strong>Custom</strong><p>Royalties, advanced analytics, and campaign support.</p></article>
+      </div>
+    </section>
+
+    <section class="signup-section" id="signup">
+      <article>
+        <h2>Consumer account</h2>
+        <p>Save brands, leave reviews, track orders, chat about pickup, and unlock discounts.</p>
+        <button class="open-portal" data-page="consumer-page">Join as Consumer</button>
+      </article>
+      <article>
+        <h2>Brand account</h2>
+        <p>Create a storefront, manage pickup requests, launch promotions, and view sales.</p>
+        <button class="open-portal" data-page="brand-page">Join as Brand</button>
+      </article>
+    </section>
+
+    <section class="account-page" id="consumer-page" hidden>
+      <button class="back-btn close-portal">← Back to homepage</button>
+      <div class="account-hero">
+        <p class="eyebrow">Consumer Signup</p>
+        <h2>Shop local brands, earn rewards, and track everything.</h2>
+        <p>Create a Threadocal shopper account to save brands, review purchases, track orders, get discounts, and message brands about local pickup.</p>
+      </div>
+      <div class="account-grid">
+        <article><span>♡</span><h3>Save Brands</h3><p>Favorite local clothing brands and get notified when they drop new items.</p></article>
+        <article><span>★</span><h3>Leave Reviews</h3><p>Review brands after buying so other shoppers know who is legit.</p></article>
+        <article><span>▤</span><h3>Track Orders</h3><p>View purchases, delivery updates, pickup status, and order history.</p></article>
+        <article><span>%</span><h3>Unlock Discounts</h3><p>Earn deals like buy 2 get 1 free, 40% off after 10 purchases, and local rewards.</p></article>
+      </div>
+      <form class="portal-form" data-form="consumer">
+        <h3>Create Consumer Account</h3>
+        <div class="form-row"><input placeholder="Full name" required><input type="email" placeholder="Email address" required></div>
+        <div class="form-row"><input placeholder="ZIP code" required><input type="password" placeholder="Password" required></div>
+        <label class="checkbox-line"><input type="checkbox"> Send me nearby brand drops and promo alerts.</label>
+        <button type="submit">Create Consumer Account</button>
+      </form>
+    </section>
+
+    <section class="account-page" id="brand-page" hidden>
+      <button class="back-btn close-portal">← Back to homepage</button>
+      <div class="account-hero brand-version">
+        <p class="eyebrow">Brand Signup</p>
+        <h2>Put your clothing brand in front of nearby shoppers.</h2>
+        <p>Create a Threadocal brand profile, list products, manage orders, receive pickup messages, launch promotions, and view your Threadocal sales dashboard.</p>
+      </div>
+      <div class="account-grid">
+        <article><span>▰</span><h3>Brand Profile</h3><p>Add your logo, story, photos, products, city, ZIP code, and pickup options.</p></article>
+        <article><span>◎</span><h3>Sales Dashboard</h3><p>Track sales, orders, insights, customer messages, and promotion results.</p></article>
+        <article><span>⚡</span><h3>Promotions</h3><p>Create discount codes, referral programs, loyalty rewards, gift cards, and giveaways.</p></article>
+        <article><span>$</span><h3>Monetization</h3><p>Start with a free listing, then upgrade to monthly promotion plans or royalty deals.</p></article>
+      </div>
+      <form class="portal-form" data-form="brand">
+        <h3>Create Brand Account</h3>
+        <div class="form-row"><input placeholder="Brand name" required><input placeholder="Owner name" required></div>
+        <div class="form-row"><input type="email" placeholder="Business email" required><input placeholder="Brand city / ZIP code" required></div>
+        <input placeholder="Instagram, TikTok, or website link">
+        <select required>
+          <option value="">What type of clothing do you sell?</option>
+          <option>Menswear</option><option>Womenswear</option><option>Kidswear</option><option>Sportswear</option><option>Streetwear</option><option>Other</option>
+        </select>
+        <label class="checkbox-line"><input type="checkbox"> I want promotional services and featured placement.</label>
+        <button type="submit">Create Brand Account</button>
+      </form>
+    </section>
+  </main>
+
+  
+
+<section class="info-pages-wrap" id="info-pages" hidden>
+  <section class="info-page" id="help-center-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Help Center</p><h1>How can we help?</h1><p>Find answers for shopping local, pickup, orders, brand accounts, promotions, and reporting issues.</p></div>
+    <div class="info-grid">
+      <article class="info-card"><h3>Shopping Help</h3><p>Learn how to search by ZIP code, browse brands, save products, and check pickup availability.</p></article>
+      <article class="info-card"><h3>Order Support</h3><p>Need tracking, returns, payment help, or pickup instructions? Start with your order number and email.</p></article>
+      <article class="info-card"><h3>Brand Support</h3><p>For local clothing brands that need help with profiles, products, promotions, royalties, or dashboards.</p></article>
+      <article class="info-card wide-card"><h3>Contact Support</h3><form class="info-form"><input placeholder="Your email"><select><option>Shopping issue</option><option>Brand account issue</option><option>Payment or order issue</option><option>Fraud or safety issue</option></select><textarea placeholder="Tell us what happened"></textarea><button>Send Support Request</button></form></article>
+      <article class="info-card"><h3>Response Time</h3><p><span class="status-pill">Prototype</span></p><p>Support routing will be connected later when Threadocal has real user accounts and order data.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="returns-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Returns</p><h1>Return or exchange an order.</h1><p>Threadocal will help customers understand each brand's return policy while keeping support simple and transparent.</p></div>
+    <div class="info-grid">
+      <article class="info-card"><h3>Return Window</h3><p>Each local brand can set its own policy. A future version will show the policy on every product and brand profile.</p></article>
+      <article class="info-card"><h3>Pickup Orders</h3><p>If the order was picked up locally, the buyer and brand may coordinate returns through Threadocal messages.</p></article>
+      <article class="info-card"><h3>Refunds</h3><p>Refunds would be processed through the original payment method once the brand approves the return.</p></article>
+      <article class="info-card wide-card"><h3>Start a Return</h3><form class="info-form"><input placeholder="Order number"><input placeholder="Email used at checkout"><select><option>Wrong size</option><option>Damaged item</option><option>Wrong item</option><option>Other</option></select><textarea placeholder="Describe your return request"></textarea><button>Submit Return Request</button></form></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="track-order-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Track Order</p><h1>Track your Threadocal order.</h1><p>Look up shipping updates, local pickup status, order history, and brand messages.</p></div>
+    <div class="info-grid">
+      <article class="info-card wide-card"><h3>Order Lookup</h3><form class="info-form"><input placeholder="Order number"><input placeholder="Email or phone"><button>Track Order</button></form></article>
+      <article class="info-card"><h3>Local Pickup</h3><p>Future pickup orders will show brand confirmation, pickup notes, and message status.</p></article>
+      <article class="info-card"><h3>Delivery</h3><p>Future shipped orders will show carrier, tracking number, and estimated delivery date.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="faq-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">FAQ</p><h1>Frequently asked questions.</h1><p>Quick answers for shoppers, local clothing brands, fees, pickup, and accounts.</p></div>
+    <div class="info-grid">
+      <article class="info-card"><h3>What is Threadocal?</h3><p>A discovery marketplace for independent clothing brands, searchable by ZIP code, city, category, and pickup radius.</p></article>
+      <article class="info-card"><h3>Is Threadocal only local?</h3><p>The goal is national coverage, while still helping shoppers find brands near them.</p></article>
+      <article class="info-card"><h3>Can brands join free?</h3><p>Yes. The concept includes free brand signup with optional paid promotional services.</p></article>
+      <article class="info-card"><h3>Does Threadocal take a fee?</h3><p>The prototype includes a small Threadocal purchase fee concept and future negotiable brand royalty agreements.</p></article>
+      <article class="info-card"><h3>Can I chat about pickup?</h3><p>That is planned for the customer side, so shoppers can coordinate local pickup with brands.</p></article>
+      <article class="info-card"><h3>Will there be an app?</h3><p>Yes, a mobile app is part of the future development plan.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="about-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">About Us</p><h1>Built for local clothing culture.</h1><p>Threadocal exists to help independent clothing brands get discovered without being buried under massive marketplaces.</p></div>
+    <div class="info-grid">
+      <article class="info-card wide-card"><h3>Our Mission</h3><p>Make it easier for shoppers to discover unique clothing brands in their city and across the country, while giving small brands tools to grow.</p></article>
+      <article class="info-card"><h3>Audience</h3><p>Designed for shoppers ages 16–40 who care about local culture, originality, and supporting small businesses.</p></article>
+      <article class="info-card"><h3>Vision</h3><p>At least one clothing brand discoverable within every 30-mile radius across America.</p></article>
+      <article class="info-card"><h3>Difference</h3><p>Threadocal focuses on clothing brands, not every product category like Amazon or eBay.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="customer-reviews-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Customer Reviews</p><h1>Real reviews are coming.</h1><p>This page will show verified reviews from shoppers who purchased from local brands through Threadocal.</p></div>
+    <div class="blank-state"><div><h2>Coming Soon</h2><p>Verified customer reviews will appear here once real purchases are connected.</p></div></div>
+  </section>
+
+  <section class="info-page" id="terms-privacy-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Terms & Privacy</p><h1>Legal pages placeholder.</h1><p>These sections are draft placeholders. A real marketplace should have policies reviewed by a qualified legal professional before launch.</p></div>
+    <div class="info-grid">
+      <article class="info-card"><h3>Terms of Service</h3><p>Future rules for shoppers, brands, accounts, payments, promotions, reviews, refunds, and platform usage.</p></article>
+      <article class="info-card"><h3>Privacy Policy</h3><p>Future explanation of how Threadocal collects, stores, and uses account, order, location, and payment-related data.</p></article>
+      <article class="info-card"><h3>Brand Agreement</h3><p>Future agreement covering brand listings, promotional plans, royalties, content rights, and product responsibilities.</p></article>
+      <article class="info-card wide-card"><h3>Important</h3><p>This prototype does not process real payments, collect real private data, or represent final legal language.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="careers-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Careers</p><h1>Build the future of local fashion discovery.</h1><p>Threadocal is early. Future roles may include engineering, brand partnerships, design, marketing, operations, and community management.</p></div>
+    <div class="info-grid">
+      <article class="info-card"><h3>Brand Partnerships</h3><p>Help contact and onboard independent clothing brands across America.</p></article>
+      <article class="info-card"><h3>Frontend Developer</h3><p>Build polished shopper and brand-facing pages with modern UI.</p></article>
+      <article class="info-card"><h3>Backend Developer</h3><p>Build accounts, databases, product listings, orders, reviews, and dashboards.</p></article>
+      <article class="info-card wide-card"><h3>Current Openings</h3><p><span class="status-pill">No official openings yet</span></p><p>This page is ready for future hiring, internships, and contributor opportunities.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="mobile-app-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Mobile App</p><h1>Threadocal in your pocket.</h1><p>The mobile app is planned for future development after the website MVP works.</p></div>
+    <div class="blank-state"><div><h2>App Coming Soon</h2><p>Future app features: ZIP search, saved brands, order tracking, pickup chat, rewards, and brand dashboards.</p></div></div>
+  </section>
+
+  <section class="info-page" id="coupons-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Coupons</p><h1>Deals from local brands.</h1><p>Threadocal promotions may include one-off codes, standalone codes, cart-level discounts, gift cards, loyalty rewards, and giveaways.</p></div>
+    <div class="info-grid">
+      <article class="info-card"><h3>WELCOME10</h3><p>Prototype coupon: 10% off your first local brand order.</p><button class="copy-code">Copy Code</button></article>
+      <article class="info-card"><h3>PICKUPFREE</h3><p>Prototype coupon: remove pickup service fees on eligible local orders.</p><button class="copy-code">Copy Code</button></article>
+      <article class="info-card"><h3>LOCALDROP</h3><p>Prototype coupon: limited-time featured drop discount.</p><button class="copy-code">Copy Code</button></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="refer-friend-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Refer a Friend</p><h1>Share local fashion. Earn rewards.</h1><p>Invite friends to discover nearby clothing brands and unlock future discounts when they shop.</p></div>
+    <div class="info-grid">
+      <article class="info-card wide-card"><h3>Your Referral Link</h3><form class="info-form"><input value="https://threadocal.com/ref/YOURCODE" readonly><button>Copy Referral Link</button></form></article>
+      <article class="info-card"><h3>You Get</h3><p>Future reward idea: store credit, coupons, or loyalty points after a friend's first purchase.</p></article>
+      <article class="info-card"><h3>They Get</h3><p>Future reward idea: first-order discount or free local pickup promo.</p></article>
+    </div>
+  </section>
+
+  <section class="info-page" id="fraud-report-page" hidden>
+    <button class="back-home">← Back to Threadocal</button>
+    <div class="info-hero"><p class="eyebrow">Fraud Report</p><h1>Report suspicious activity.</h1><p>Help protect shoppers and brands from fake listings, scams, counterfeit products, suspicious messages, and payment issues.</p></div>
+    <div class="info-grid">
+      <article class="info-card wide-card"><h3>Submit a Report</h3><form class="info-form"><input placeholder="Your email"><select><option>Fake brand listing</option><option>Counterfeit product</option><option>Suspicious message</option><option>Payment issue</option><option>Other</option></select><input placeholder="Brand, order number, or profile link"><textarea placeholder="Explain what happened"></textarea><button>Submit Fraud Report</button></form></article>
+      <article class="info-card"><h3>Safety Note</h3><p>Do not share passwords, payment codes, or private financial information in messages with unknown accounts.</p></article>
+    </div>
+  </section>
+</section>
+
+<footer>
+    <div><h4>Help & Info</h4><a href="help-center.html">Help Center</a><a href="returns.html">Returns</a><a href="track-order.html">Track order</a><a href="faq.html">FAQ</a></div>
+    <div><h4>About Threadocal</h4><a href="about.html">About us</a><a href="customer-reviews.html">Customer Reviews</a><a href="terms-privacy.html">Terms & Privacy</a><a href="careers.html">Careers</a></div>
+    <div><h4>More</h4><a href="mobile-app.html">Mobile app</a><a href="coupons.html">Coupons</a><a href="refer-friend.html">Refer a friend</a><a href="fraud-report.html">Fraud report</a></div>
+    <div><h4>Social</h4><p><a href="social.html">Instagram · TikTok · YouTube</a><br/><a href="payment-methods.html">Visa · CashApp · PayPal</a></p></div>
+  </footer>
+
+  <dialog id="dealDialog"><form method="dialog"><button class="close">×</button><h2>Deal alerts</h2><p>Get notified about local drops, discount codes, loyalty rewards, and giveaways.</p><input placeholder="Email or phone" /><button class="notify">Notify me</button></form></dialog>
+  <script>
+const brands = [
+  {name:'District Stitch Co.', city:'Washington, DC', zip:'20001', miles:2.4, cat:'menswear', rating:4.8, reviews:126, partnered:true, tags:['Heavyweight Streetwear','Pickup']},
+  {name:'Southside Supply', city:'Atlanta, GA', zip:'30303', miles:3.2, cat:'menswear', rating:4.7, reviews:211, partnered:true, tags:['Urban Essentials','Sale']},
+  {name:'Parallel Vintage', city:'Austin, TX', zip:'78701', miles:4.9, cat:'seasonal', rating:4.9, reviews:77, partnered:true, tags:['Vintage Reimagined']},
+  {name:'Nova Wave', city:'Los Angeles, CA', zip:'90012', miles:5.1, cat:'womenswear', rating:4.8, reviews:184, partnered:true, tags:['Y2K','Contemporary']},
+  {name:'Concrete Culture', city:'Chicago, IL', zip:'60601', miles:6.4, cat:'sportswear', rating:4.6, reviews:92, partnered:false, tags:['Streetwear Collective']},
+  {name:'Born Local Co.', city:'Miami, FL', zip:'33101', miles:7.2, cat:'sale', rating:4.9, reviews:158, partnered:true, tags:['Made in Miami']},
+  {name:'Rappahannock Threads', city:'Fredericksburg, VA', zip:'22401', miles:1.8, cat:'womenswear', rating:4.6, reviews:52, partnered:true, tags:['Handmade','Local pickup']},
+  {name:'Valley Mini Fits', city:'Phoenix, AZ', zip:'85016', miles:8.9, cat:'kidswear', rating:4.8, reviews:38, partnered:true, tags:['Kidswear','Gift cards']}
+];
+
+let activeCategory = 'all';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+function estimateBase(query){
+  const q = query.trim().toLowerCase();
+  if(!q) return brands;
+  const exact = brands.filter(b => b.zip === q);
+  if(exact.length) return exact.concat(brands.filter(b => b.zip !== q));
+  const matches = brands.filter(b => (`${b.name} ${b.city} ${b.zip} ${b.tags.join(' ')}`).toLowerCase().includes(q));
+  return matches.concat(brands.filter(b => !matches.includes(b)));
+}
+
+function renderResults(){
+  const query = $('#locationInput')?.value || $('#globalSearch')?.value || '';
+  const partneredOnly = $('#partneredOnly')?.checked;
+  const radius = Number($('#radiusFilter')?.value || 5000);
+  let list = estimateBase(query).map((b,i)=>({...b, displayMiles: query ? b.miles + (i * 2.2) : b.miles}));
+  if(activeCategory !== 'all') list = list.filter(b => b.cat === activeCategory || b.tags.join(' ').toLowerCase().includes(activeCategory));
+  if(partneredOnly) list = list.filter(b => b.partnered);
+  list = list.filter(b => b.displayMiles <= radius).sort((a,b)=>a.displayMiles-b.displayMiles);
+  $('#resultCount').textContent = `${list.length} brand${list.length === 1 ? '' : 's'}`;
+  $('#brandResults').innerHTML = list.map(b => `
+    <article class="brand-card">
+      <span class="heart">♡</span>
+      <div class="brand-art">${b.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+      <span class="location-pill">${b.city}</span>
+      <div class="brand-info">
+        <h3>${b.name}</h3>
+        <p>${b.tags[0]} · ${b.displayMiles.toFixed(1)} mi · ${b.partnered ? 'Partnered' : 'Independent'}</p>
+        <strong class="rating">${b.rating}</strong>
+      </div>
+    </article>`).join('') || '<p>No brands found. Try Everywhere or another city/ZIP.</p>';
+}
+
+function setCategory(cat){
+  activeCategory = cat || 'all';
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.category === activeCategory));
+  renderResults();
+}
+
+$$('.tab').forEach(btn => btn.addEventListener('click', () => setCategory(btn.dataset.category)));
+$('#locationSearch')?.addEventListener('submit', e => {e.preventDefault(); renderResults(); document.querySelector('#brands')?.scrollIntoView({behavior:'smooth'});});
+$('#topSearch')?.addEventListener('submit', e => {e.preventDefault(); $('#locationInput').value = $('#globalSearch').value; renderResults(); document.querySelector('#brands')?.scrollIntoView({behavior:'smooth'});});
+$('#globalSearch')?.addEventListener('input', () => { $('#locationInput').value = $('#globalSearch').value; renderResults(); });
+$('#partneredOnly')?.addEventListener('change', renderResults);
+$('#radiusFilter')?.addEventListener('change', renderResults);
+$('#useLocation')?.addEventListener('click', () => { $('#locationInput').value = '20001'; renderResults(); document.querySelector('#brands')?.scrollIntoView({behavior:'smooth'}); });
+$('#openDeals')?.addEventListener('click', () => $('#dealDialog').showModal());
+$('#openDeals2')?.addEventListener('click', () => $('#dealDialog').showModal());
+renderResults();
+
+
+// Consumer and brand signup page interactions
+function openAccountPage(pageId){
+  document.querySelectorAll('.account-page').forEach(page => page.hidden = true);
+  const page = document.getElementById(pageId);
+  if(page){
+    page.hidden = false;
+    page.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+document.querySelectorAll('.open-portal').forEach(button => {
+  button.addEventListener('click', () => openAccountPage(button.dataset.page));
+});
+
+document.querySelectorAll('.close-portal').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.account-page').forEach(page => page.hidden = true);
+    document.getElementById('signup')?.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+document.querySelectorAll('.portal-form').forEach(form => {
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const accountType = form.dataset.form === 'brand' ? 'brand' : 'consumer';
+    alert(`Prototype ${accountType} signup saved. Later this will connect to a real account database.`);
+  });
+});
+
+
+
+// Footer information page routing
+function openInfoPage(pageId){
+  const main = document.querySelector('main');
+  const infoWrap = document.getElementById('info-pages');
+  if(main) main.hidden = true;
+  if(infoWrap) infoWrap.hidden = false;
+  document.querySelectorAll('.info-page').forEach(page => page.hidden = true);
+  const page = document.getElementById(pageId);
+  if(page){
+    page.hidden = false;
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+function closeInfoPages(){
+  const main = document.querySelector('main');
+  const infoWrap = document.getElementById('info-pages');
+  if(main) main.hidden = false;
+  if(infoWrap) infoWrap.hidden = true;
+  document.querySelectorAll('.info-page').forEach(page => page.hidden = true);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('.footer-page-link').forEach(link => {
+  link.addEventListener('click', () => openInfoPage(link.dataset.page));
+});
+document.querySelectorAll('.back-home').forEach(button => {
+  button.addEventListener('click', closeInfoPages);
+});
+document.querySelectorAll('.info-form').forEach(form => {
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    alert('Prototype form submitted. Later this will connect to Threadocal accounts, support, or order data.');
+  });
+});
+document.querySelectorAll('.copy-code').forEach(button => {
+  button.addEventListener('click', () => alert('Prototype code copied.'));
+});
+
+</script>
+</body>
+</html>

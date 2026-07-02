@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Returns | Threadocal</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
+:root{--green:#94ff19;--dark:#050705;--panel:#111511;--muted:#b8c1b6;--line:rgba(255,255,255,.16);--white:#f6f8f3;--shadow:0 30px 90px rgba(0,0,0,.42)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;background:#050705;color:var(--white)}body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 82% 8%,rgba(148,255,25,.28),transparent 25%),radial-gradient(circle at 12% 34%,rgba(40,209,45,.12),transparent 26%),linear-gradient(180deg,#0c100c,#050705 72%);z-index:-1}a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}.bar{position:sticky;top:0;z-index:9;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px clamp(18px,5vw,60px);background:rgba(255,255,255,.94);color:#050705;box-shadow:0 12px 45px rgba(0,0,0,.2)}.logo{display:flex;align-items:center;gap:10px;font-family:Anton,Impact,sans-serif;font-size:1.7rem;letter-spacing:.04em}.logo img{width:44px;height:44px;object-fit:contain;display:block}.nav{display:flex;gap:16px;flex-wrap:wrap;font-weight:900}.nav a{opacity:.8}.nav a:hover{opacity:1;color:#286b0c}.wrap{max-width:1180px;margin:0 auto;padding:48px 22px}.hero{border:1px solid var(--line);border-radius:32px;padding:42px;background:linear-gradient(135deg,rgba(148,255,25,.18),rgba(255,255,255,.04) 36%,rgba(255,255,255,.02));box-shadow:var(--shadow);overflow:hidden;position:relative}.hero:after{content:"THREADOCAL";position:absolute;right:-20px;bottom:-36px;font-family:Anton;font-size:9rem;color:rgba(148,255,25,.06)}.eyebrow{margin:0 0 12px;color:var(--green);font-weight:1000;letter-spacing:.12em;text-transform:uppercase}.hero h1,h2{font-family:Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em;line-height:.92;margin:0}.hero h1{font-size:clamp(3.2rem,8vw,7rem);max-width:850px}.hero p,.muted{color:var(--muted);line-height:1.7}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}.grid.two{grid-template-columns:repeat(2,1fr)}.card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,#171b17,#0e100e);padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.25)}.card.light{background:#f4f5f2;color:#050705}.card.green{background:linear-gradient(135deg,var(--green),#35cf23);color:#050705}.card h3{margin:0 0 8px;font-size:1.25rem}.pill{display:inline-block;border-radius:999px;background:rgba(148,255,25,.16);color:var(--green);padding:8px 12px;font-weight:900;font-size:.85rem}.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:999px;background:var(--green);color:#050705;font-weight:1000;padding:14px 20px;margin-top:14px;cursor:pointer}.btn.dark{background:#050705;color:white}.form{display:grid;gap:14px;margin-top:24px}.form input,.form textarea,.form select{width:100%;border:1px solid var(--line);background:#0d100d;color:white;border-radius:16px;padding:15px}.form textarea{min-height:130px}.summary{display:grid;gap:12px}.row{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--line)}.product{display:grid;grid-template-columns:110px 1fr auto;gap:16px;align-items:center}.thumb{width:110px;height:110px;border-radius:22px;background:linear-gradient(135deg,#303830,#0b0d0b 45%,#9cff1b);position:relative}.thumb:after{content:"";position:absolute;inset:20px;border:7px solid var(--green);clip-path:polygon(10% 0,38% 0,41% 12%,59% 12%,62% 0,90% 0,100% 30%,78% 42%,68% 31%,50% 100%,32% 31%,22% 42%,0 30%)}.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.tabs a{border:1px solid var(--line);border-radius:999px;padding:10px 14px;color:var(--muted);font-weight:900}.quote{font-size:1.1rem;line-height:1.7;color:#e6eee3}footer{max-width:1180px;margin:40px auto 0;padding:24px 22px 50px;color:var(--muted);border-top:1px solid var(--line)}@media(max-width:800px){.bar{display:block}.nav{margin-top:10px}.grid,.grid.two{grid-template-columns:1fr}.product{grid-template-columns:80px 1fr}.thumb{width:80px;height:80px}.hero{padding:28px}.hero h1{font-size:3.4rem}}
+
+/* Threadocal navigation polish: home link + hover states */
+.main-nav a,
+.brand,
+.signup,
+.login,
+.nav-actions button,
+.panel-btn,
+.promo a,
+.promo button,
+.signup-section button,
+.info-card a,
+footer a {
+  transition: color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.main-nav a {
+  position: relative;
+  padding: 10px 0;
+}
+.main-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--green);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+.main-nav a:hover,
+.main-nav a.active {
+  color: #173a14;
+}
+.main-nav a:hover::after,
+.main-nav a.active::after {
+  transform: scaleX(1);
+}
+.brand:hover,
+.signup:hover,
+.login:hover,
+.nav-actions button:hover,
+.panel-btn:hover,
+.promo a:hover,
+.promo button:hover,
+.signup-section button:hover,
+.info-card a:hover,
+footer a:hover {
+  transform: translateY(-2px);
+}
+.signup:hover,
+.location-search button:hover,
+.notify:hover {
+  box-shadow: 0 0 0 4px rgba(148,255,25,.22), 0 10px 24px rgba(148,255,25,.22);
+}
+footer a:hover {
+  color: var(--green);
+}
+
+</style></head><body><header class="bar"><a class="logo" href="index.html"><img src="assets/threadocal-logo.png" alt="Threadocal logo"><span>THREADOCAL</span></a><nav class="nav"><a href="shop.html">Shop</a><a href="brands.html">Brands</a><a href="promotions.html">Promotions</a><a href="cart.html">Cart</a><a href="help-center.html">Help</a></nav></header><main class="wrap"><section class="hero"><p class="eyebrow">Return center</p><h1>Returns</h1><p>Start return requests, check brand return policies, and report damaged or incorrect items.</p></section><form class="form card"><input placeholder="Order number"><input placeholder="Email"><select><option>Wrong size</option><option>Damaged item</option><option>Item not as described</option></select><button class="btn">Start Return</button></form></main><footer>Threadocal prototype page. Connect this page into the main website when you combine the project.</footer></body></html>
