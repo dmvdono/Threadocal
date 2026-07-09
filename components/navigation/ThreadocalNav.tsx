@@ -15,7 +15,7 @@ export function ThreadocalNav() {
   const pathname = usePathname();
   const [cartCount, setCartCount] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
-  const [openMenu, setOpenMenu] = useState<"brands" | "account" | null>(null);
+  const [openMenu, setOpenMenu] = useState<"brands" | "signup" | "login" | "account" | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const brandsMenuRef = useRef<HTMLDivElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
@@ -58,7 +58,7 @@ export function ThreadocalNav() {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  function openDropdown(menu: "brands" | "account") {
+  function openDropdown(menu: "brands" | "signup" | "login" | "account") {
     if (closeTimer.current) {
       clearTimeout(closeTimer.current);
     }
@@ -110,7 +110,7 @@ export function ThreadocalNav() {
               >
                 {item.label}
               </button>
-              <div className="nav-dropdown" role="menu">
+              <div className="nav-dropdown" onMouseDown={(event) => event.preventDefault()} role="menu">
                 <Link href={routes.brands} onClick={() => setOpenMenu(null)} role="menuitem">Browse Brands</Link>
                 <Link href={routes.brandSubmit} onClick={() => setOpenMenu(null)} role="menuitem">Join as a Brand</Link>
                 <Link href={routes.brandDashboard} onClick={() => setOpenMenu(null)} role="menuitem">Brand Dashboard</Link>
@@ -129,12 +129,56 @@ export function ThreadocalNav() {
       </div>
 
       <div className="nav-actions">
-        <Link className="signup" href={routes.signup}>
-          Sign Up
-        </Link>
-        <Link className="login" href={routes.login}>
-          Log In
-        </Link>
+        <div
+          className={`nav-menu ${openMenu === "signup" ? "open" : ""}`}
+          onBlur={(event) => closeOnBlur(event.currentTarget, event.relatedTarget)}
+          onFocus={() => openDropdown("signup")}
+          onMouseEnter={() => openDropdown("signup")}
+          onMouseLeave={closeDropdown}
+        >
+          <button
+            aria-expanded={openMenu === "signup"}
+            aria-haspopup="menu"
+            className="signup nav-dropdown-trigger"
+            onClick={() => setOpenMenu(openMenu === "signup" ? null : "signup")}
+            type="button"
+          >
+            Sign Up
+          </button>
+          <div className="nav-dropdown" onMouseDown={(event) => event.preventDefault()} role="menu">
+            <Link href={`${routes.signup}?role=customer`} onClick={() => setOpenMenu(null)} role="menuitem">
+              Customer Sign Up
+            </Link>
+            <Link href={`${routes.signup}?role=brand_owner`} onClick={() => setOpenMenu(null)} role="menuitem">
+              Brand Sign Up
+            </Link>
+          </div>
+        </div>
+        <div
+          className={`nav-menu ${openMenu === "login" ? "open" : ""}`}
+          onBlur={(event) => closeOnBlur(event.currentTarget, event.relatedTarget)}
+          onFocus={() => openDropdown("login")}
+          onMouseEnter={() => openDropdown("login")}
+          onMouseLeave={closeDropdown}
+        >
+          <button
+            aria-expanded={openMenu === "login"}
+            aria-haspopup="menu"
+            className="login nav-dropdown-trigger"
+            onClick={() => setOpenMenu(openMenu === "login" ? null : "login")}
+            type="button"
+          >
+            Log In
+          </button>
+          <div className="nav-dropdown" onMouseDown={(event) => event.preventDefault()} role="menu">
+            <Link href={`${routes.login}?role=customer`} onClick={() => setOpenMenu(null)} role="menuitem">
+              Customer Login
+            </Link>
+            <Link href={`${routes.login}?role=brand_owner`} onClick={() => setOpenMenu(null)} role="menuitem">
+              Brand Login
+            </Link>
+          </div>
+        </div>
         <Link className="nav-icon-link" href={`${routes.account}#favorites`} aria-label="Saved items">
           ♡<b>{savedCount}</b>
         </Link>

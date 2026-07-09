@@ -23,6 +23,9 @@ button,input,select{font:inherit}
 .signup{display:grid;place-items:center;background:var(--green);color:#050705}
 .login{display:grid;place-items:center;background:#050705;color:white}
 .nav-actions button,.nav-icon-link{position:relative;background:#f4f5f2;font-size:1.35rem;color:#050705;display:grid;place-items:center}
+.nav-actions button.signup,.nav-actions button.login{font-size:1rem;line-height:1}
+.nav-actions button.signup{background:var(--green);color:#050705}
+.nav-actions button.login{background:#050705;color:white}
 .nav-icon-link.active{outline:3px solid rgba(148,255,25,.7)}
 .nav-actions b{position:absolute;right:4px;top:2px;background:var(--green);color:#050705;border-radius:50%;font-size:.7rem;width:18px;height:18px;display:grid;place-items:center}
 
