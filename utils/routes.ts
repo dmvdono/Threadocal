@@ -1,0 +1,25 @@
+export const routes = {
+  home: "/",
+  login: "/login",
+  signup: "/signup",
+  shop: "/shop",
+  brands: "/brands",
+  promotions: "/promotions",
+  howItWorks: "/how-it-works",
+  cart: "/cart",
+  checkout: "/checkout",
+  account: "/account",
+  orders: "/orders",
+  brandSubmit: "/brands/submit",
+  brandPreview: "/brands/preview",
+  dashboard: "/dashboard",
+  brandDashboard: "/brand-dashboard",
+  brandOrders: "/brand-dashboard/orders",
+  brandProducts: "/brand-dashboard/products",
+  brandInventory: "/brand-dashboard/inventory",
+  brandCoupons: "/brand-dashboard/coupons",
+  brandAnalytics: "/brand-dashboard/analytics",
+  admin: "/admin",
+} as const;
+
+export type AppRoute = (typeof routes)[keyof typeof routes];

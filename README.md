@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Current Build Status
+
+- Supabase Auth is paused.
+- Marketplace demo mode is active.
+- localStorage is used for cart, orders, and brand demo data.
+- Phase 1 Marketplace Demo and Phase 1.5 Brand Portal are active.
+- Phase 2 Customer Experience is active in demo/localStorage mode.
+- Threadocal Admin Demo is active at `/admin` using localStorage for approvals, disputes, moderation, and activity logs.
+- The next immediate goal is stabilizing demo marketplace operations before returning to Supabase Auth.
+
+See `docs/THREADOCAL_ROADMAP.md` for the master build roadmap.
+
+## Deployment
+
+Threadocal is prepared for Vercel deployment, but deployment should be done manually after the local checks pass. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for GitHub, Vercel, environment variable, `threadocal.com`, GoDaddy DNS, and post-deployment testing steps.
+
 ## Getting Started
 
 First, run the development server:
