@@ -257,6 +257,13 @@ footer strong{color:white}
 .price-slider input[type="range"]{padding:0;accent-color:var(--green);cursor:pointer}
 .portal-list{display:grid;gap:12px;align-content:start}
 .portal-list-item{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+.portal-product-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-content:start}
+.portal-product-card{border:1px solid var(--line);border-radius:18px;background:#111511;overflow:hidden;display:grid;gap:14px}
+.portal-product-card>div:not(.portal-product-image){padding:0 18px}
+.portal-product-card .portal-row-actions{padding:0 18px 18px}
+.portal-product-image{min-height:190px;background:linear-gradient(135deg,#303830,#0b0d0b 45%,#9cff1b);display:grid;place-items:center;overflow:hidden}
+.portal-product-image img,.product-art img,.product-detail-art img,.public-media img,.public-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.brand-profile-editor{max-width:1440px;margin:0 auto 34px;padding:0 32px}
 .portal-row-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .portal-table-wrap{max-width:1440px;margin:0 auto 34px;padding:0 32px;overflow:auto}
 .portal-table{width:100%;border-collapse:collapse;border:1px solid var(--line);background:#111511;border-radius:18px;overflow:hidden}
@@ -323,8 +330,10 @@ footer strong{color:white}
 .brand-storefront{max-width:1440px;margin:0 auto 34px;padding:0 32px;display:grid;gap:18px}
 .brand-storefront-hero{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#111511}
 .brand-banner{min-height:260px;background:linear-gradient(135deg,#303830,#0b0d0b 45%,#9cff1b);display:grid;place-items:center;font-size:6rem;font-weight:1000;color:rgba(255,255,255,.16)}
+.public-media{overflow:hidden}
 .brand-storefront-info{display:grid;grid-template-columns:90px 1fr auto;gap:18px;align-items:center;padding:22px}
 .brand-logo{width:90px;height:90px;border-radius:22px;background:#050705;border:1px solid var(--line);display:grid;place-items:center;color:var(--green);font-weight:1000;font-size:2rem}
+.public-logo{overflow:hidden}
 .brand-storefront-info h2{margin:0 0 8px;text-transform:uppercase;font-size:clamp(2rem,5vw,4rem);line-height:.95}
 .brand-storefront-info p{margin:0 0 12px;color:var(--muted);line-height:1.55}
 .brand-storefront-grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
@@ -334,6 +343,10 @@ footer strong{color:white}
 .storefront-sidebar p{margin:0 0 8px;color:var(--muted);line-height:1.55}
 .storefront-filters,.storefront-products{padding:0;margin-left:0;margin-right:0}
 .inline-primary{display:inline-grid;width:max-content;min-height:42px;margin-top:14px;padding:0 16px}
+.social-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.social-row a{border:1px solid var(--line);border-radius:999px;padding:8px 10px;color:var(--green);font-weight:1000}
+.product-gallery{display:grid;gap:12px}
+.product-gallery .product-detail-art{min-height:260px}
 .admin-dashboard{max-width:1440px;margin:0 auto 34px;padding:0 32px;display:grid;gap:18px}
 .admin-nav{display:flex;gap:10px;flex-wrap:wrap}
 .admin-nav button{border:1px solid var(--line);border-radius:999px;background:#111511;color:var(--green);padding:10px 14px;font-weight:1000;cursor:pointer}
