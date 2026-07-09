@@ -68,6 +68,10 @@ function normalizeOptional(value: string | undefined) {
 function getAuthErrorMessage(error: unknown) {
   const message = getStringField(error, "message") ?? (typeof error === "string" ? error : null);
 
+  if (isDuplicateEmailError(error)) {
+    return "An account already exists for this email. Log in instead, or use a different email address.";
+  }
+
   if (message === "Failed to fetch" || message === "Load failed") {
     return SUPABASE_CONNECTION_ERROR;
   }
@@ -107,6 +111,22 @@ function isMissingSessionError(error: unknown) {
   }
 
   return error.message === "Auth session missing!" || error.name === "AuthSessionMissingError";
+}
+
+function isDuplicateEmailError(error: unknown) {
+  const message = (getStringField(error, "message") ?? (typeof error === "string" ? error : "")).toLowerCase();
+  const code = (getStringField(error, "code") ?? getStringField(error, "error_code") ?? "").toLowerCase();
+  const details = (getStringField(error, "details") ?? "").toLowerCase();
+
+  return (
+    code === "user_already_exists" ||
+    code === "email_exists" ||
+    code === "23505" ||
+    message.includes("user already registered") ||
+    message.includes("already been registered") ||
+    message.includes("already exists") ||
+    details.includes("profiles_email_key")
+  );
 }
 
 type SignupValidationResult =
@@ -226,7 +246,7 @@ export async function getCurrentProfile() {
   const { data, error } = await runAuthRequest(() =>
     supabase
       .from("profiles")
-      .select("id, full_name, role, city, state, zip_code, created_at")
+      .select("id, email, full_name, role, city, state, zip_code, created_at")
       .eq("id", user.id)
       .single(),
   );
@@ -291,6 +311,7 @@ export async function signup(input: SignupInput): Promise<AuthResult> {
 
   const profile = {
     id: data.user.id,
+    email,
     full_name: fullName,
     role: input.role,
     city: normalizeOptional(input.city),
@@ -310,7 +331,7 @@ export async function signup(input: SignupInput): Promise<AuthResult> {
     supabase
       .from("profiles")
       .insert(profile)
-      .select("id, full_name, role, city, state, zip_code, created_at")
+      .select("id, email, full_name, role, city, state, zip_code, created_at")
       .single(),
   );
 

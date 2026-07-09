@@ -7,6 +7,7 @@ export type Database = {
         Row: Profile;
         Insert: {
           id: string;
+          email: string;
           full_name: string;
           role: UserRole;
           city?: string | null;
@@ -15,6 +16,7 @@ export type Database = {
           created_at?: string;
         };
         Update: {
+          email?: string;
           full_name?: string;
           role?: UserRole;
           city?: string | null;

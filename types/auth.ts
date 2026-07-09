@@ -8,6 +8,7 @@ export type AuthUser = {
 
 export type Profile = {
   id: string;
+  email: string;
   full_name: string;
   role: UserRole;
   city: string | null;
