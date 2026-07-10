@@ -7,12 +7,12 @@ export default function BrandDashboardPage() {
     <ThreadocalPage
       eyebrow="Brand tools"
       title="Brand dashboard"
-      intro="Demo mode workspace for independent clothing brands to manage visibility, promotions, and local pickup activity without Supabase Auth."
+      intro="Workspace for independent clothing brands to manage profile, products, promotions, and marketplace activity."
       breadcrumbs={[{ label: "Brand Dashboard" }]}
       cards={[
-        { title: "Brand Profile", body: "Demo brand profile tools will use localStorage until Supabase Auth resumes." },
+        { title: "Brand Profile", body: "Save your storefront identity before uploading media or publishing products." },
         { title: "Promotions", body: "Upcoming discount codes, local deal alerts, and featured campaigns will be managed here." },
-        { title: "Insights", body: "Demo analytics placeholders for profile views, customer interest, and sales signals." },
+        { title: "Insights", body: "Profile views, customer interest, and sales signals will appear here as marketplace data grows." },
       ]}
     >
       <BrandProfileEditor />

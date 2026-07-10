@@ -34,6 +34,7 @@ export type Database = {
           id: string;
           owner_profile_id: string;
           name: string;
+          brand_name: string | null;
           slug: string;
           tagline: string | null;
           description: string | null;
@@ -63,6 +64,7 @@ export type Database = {
           id?: string;
           owner_profile_id: string;
           name: string;
+          brand_name?: string | null;
           slug: string;
           tagline?: string | null;
           description?: string | null;
@@ -91,6 +93,7 @@ export type Database = {
         Update: {
           owner_profile_id?: string;
           name?: string;
+          brand_name?: string | null;
           slug?: string;
           tagline?: string | null;
           description?: string | null;

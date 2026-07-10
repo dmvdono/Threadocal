@@ -244,7 +244,7 @@ async function createSignupProfile(
       .from("profiles")
       .upsert(profile, { onConflict: "id" })
       .select(PROFILE_SELECT)
-      .single(),
+      .maybeSingle(),
   );
 }
 
@@ -288,14 +288,26 @@ export async function getCurrentProfile() {
       .from("profiles")
       .select(PROFILE_SELECT)
       .eq("id", user.id)
-      .single(),
+      .order("created_at", { ascending: true })
+      .limit(2),
   );
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data as Profile;
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  if (data.length > 1) {
+    console.warn("[Threadocal auth] Duplicate profiles found for authenticated user; using the first row.", {
+      userId: user.id,
+      count: data.length,
+    });
+  }
+
+  return data[0] as Profile;
 }
 
 export async function signup(input: SignupInput): Promise<AuthResult> {

@@ -69,10 +69,10 @@ function createStoragePath(ownerId: string, file: File) {
 async function uploadMarketplaceImage(bucket: string, file: File, maxBytes: number) {
   validateImageFile(file, maxBytes);
 
-  const brand = await ensureOwnerBrand();
+  const { brand } = await getOwnerBrand();
 
   if (!brand) {
-    throw new Error("Sign in as a brand owner before uploading images.");
+    throw new Error("Save your brand profile before uploading images.");
   }
 
   const supabase = createBrowserSupabaseClient();
@@ -247,7 +247,7 @@ export type BrandDashboardProfileResult = {
 
 export type BrandDashboardProductSaveResult = {
   mode: DashboardMode;
-  product: BrandPortalProduct;
+  product?: BrandPortalProduct;
   products: BrandPortalProduct[];
   error?: string;
 };
@@ -348,9 +348,12 @@ function toNullable(value: string | null | undefined) {
   return trimmed ? trimmed : null;
 }
 
-function createBrandSlug(name: string, ownerId: string) {
-  const baseSlug = slugify(name) || "threadocal-brand";
-  return `${baseSlug}-${ownerId.slice(0, 8)}`;
+function logBrandPortalDebug(context: string, details?: unknown) {
+  console.info(`[Threadocal brand portal] ${context}`, details ?? "");
+}
+
+function logBrandPortalError(context: string, error: unknown) {
+  console.error(`[Threadocal brand portal] ${context}`, error);
 }
 
 async function getDashboardProfile() {
@@ -363,105 +366,139 @@ async function getDashboardProfile() {
   return profile;
 }
 
-async function ensureOwnerBrand(): Promise<BrandRow | null> {
+async function getOwnerBrand(): Promise<{ profile: Awaited<ReturnType<typeof getDashboardProfile>>; brand: BrandRow | null }> {
   const profile = await getDashboardProfile();
 
   if (!profile) {
-    return null;
+    logBrandPortalDebug("No authenticated brand/admin profile found while loading brand.");
+    return { profile: null, brand: null };
   }
 
   const supabase = createBrowserSupabaseClient();
-  const { data: existingBrand, error: existingError } = await supabase
+  logBrandPortalDebug("Loading owner brand.", { profileId: profile.id });
+  const { data: brands, error } = await supabase
     .from("brands")
     .select("*")
     .eq("owner_profile_id", profile.id)
     .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(2);
 
-  if (existingError) {
-    throw new Error(existingError.message);
+  if (error) {
+    logBrandPortalError("Owner brand load failed.", error);
+    throw new Error(error.message);
   }
 
-  if (existingBrand) {
-    return existingBrand;
+  if (!brands || brands.length === 0) {
+    logBrandPortalDebug("No owner brand exists yet.", { profileId: profile.id });
+    return { profile, brand: null };
   }
 
-  const brandName = `${profile.full_name}'s Brand`;
-  const { data: createdBrand, error: createError } = await supabase
-    .from("brands")
-    .insert({
-      owner_profile_id: profile.id,
-      name: brandName,
-      slug: createBrandSlug(brandName, profile.id),
-      description: "",
-      city: profile.city,
-      state: profile.state,
-      zip_code: profile.zip_code,
-      approval_status: "pending_review",
-      pickup_available: true,
-    })
-    .select("*")
-    .single();
-
-  if (createError) {
-    throw new Error(createError.message);
+  if (brands.length > 1) {
+    console.warn("[Threadocal brand portal] Duplicate brands found for owner; using the first row.", {
+      profileId: profile.id,
+      count: brands.length,
+      brandIds: brands.map((brand) => brand.id),
+    });
   }
 
-  return createdBrand;
+  return { profile, brand: brands[0] };
+}
+
+function validateBrandProfileInput(input: BrandProfileInput) {
+  const name = input.name.trim();
+  const username = slugify(input.username || input.name);
+
+  if (!name) {
+    return { ok: false as const, error: "Brand name is required." };
+  }
+
+  if (!username) {
+    return { ok: false as const, error: "Username is required." };
+  }
+
+  return { ok: true as const, name, username };
 }
 
 export async function getBrandDashboardProfile(): Promise<BrandDashboardProfileResult> {
   try {
-    const brand = await ensureOwnerBrand();
+    const { profile, brand } = await getOwnerBrand();
 
-    if (!brand) {
-      return { mode: "demo" };
+    if (!profile) {
+      return { mode: "demo", error: "Sign in as a brand owner to load Supabase brand data." };
     }
 
-    return { mode: "supabase", brand };
+    return { mode: "supabase", brand: brand ?? undefined };
   } catch (error) {
+    logBrandPortalError("Brand dashboard profile load failed.", error);
     return { mode: "demo", error: getErrorMessage(error) };
   }
 }
 
 export async function saveBrandDashboardProfile(input: BrandProfileInput): Promise<BrandDashboardProfileResult> {
   try {
-    const brand = await ensureOwnerBrand();
+    const validation = validateBrandProfileInput(input);
 
-    if (!brand) {
-      return { mode: "demo" };
+    if (!validation.ok) {
+      return { mode: "supabase", error: validation.error };
     }
 
+    const { profile, brand } = await getOwnerBrand();
+
+    if (!profile) {
+      return { mode: "demo", error: "Sign in as a brand owner before saving your brand profile." };
+    }
+
+    logBrandPortalDebug(brand ? "Updating owner brand." : "Creating owner brand from save action.", {
+      profileId: profile.id,
+      brandId: brand?.id,
+    });
     const supabase = createBrowserSupabaseClient();
-    const { data, error } = await supabase
-      .from("brands")
-      .update({
-        name: input.name.trim(),
-        slug: slugify(input.username || input.name),
-        description: toNullable(input.bio),
-        logo_url: toNullable(input.logoUrl),
-        banner_url: toNullable(input.bannerUrl),
-        website_url: toNullable(input.websiteUrl),
-        instagram_url: toNullable(input.instagramUrl),
-        tiktok_url: toNullable(input.tiktokUrl),
-        youtube_url: toNullable(input.youtubeUrl),
-        city: toNullable(input.city),
-        state: toNullable(input.state),
-        zip_code: toNullable(input.zipCode),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", brand.id)
-      .select("*")
-      .single();
+    const now = new Date().toISOString();
+    const brandPayload = {
+      owner_profile_id: profile.id,
+      name: validation.name,
+      brand_name: validation.name,
+      slug: validation.username,
+      description: toNullable(input.bio),
+      logo_url: toNullable(input.logoUrl),
+      banner_url: toNullable(input.bannerUrl),
+      website_url: toNullable(input.websiteUrl),
+      instagram_url: toNullable(input.instagramUrl),
+      tiktok_url: toNullable(input.tiktokUrl),
+      youtube_url: toNullable(input.youtubeUrl),
+      city: toNullable(input.city),
+      state: toNullable(input.state),
+      zip_code: toNullable(input.zipCode),
+      approval_status: brand?.approval_status ?? "pending_review" as const,
+      pickup_available: brand?.pickup_available ?? true,
+      updated_at: now,
+    };
+    const { data, error } = brand
+      ? await supabase
+          .from("brands")
+          .update(brandPayload)
+          .eq("id", brand.id)
+          .select("*")
+          .maybeSingle()
+      : await supabase
+          .from("brands")
+          .insert({ ...brandPayload, created_at: now })
+          .select("*")
+          .maybeSingle();
 
     if (error) {
+      logBrandPortalError("Brand profile save failed.", error);
       throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Threadocal could not save the brand profile. Please try again.");
     }
 
     return { mode: "supabase", brand: data };
   } catch (error) {
-    return { mode: "demo", error: getErrorMessage(error) };
+    logBrandPortalError("Brand dashboard profile save failed.", error);
+    return { mode: "supabase", error: getErrorMessage(error) };
   }
 }
 
@@ -492,15 +529,19 @@ export async function uploadBrandDashboardAsset(kind: "logo" | "banner", file: F
       .update(update)
       .eq("id", brand.id)
       .select("*")
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error(error.message);
     }
 
+    if (!data) {
+      throw new Error("Threadocal could not update the brand image. Please try again.");
+    }
+
     return { mode: "supabase", brand: data };
   } catch (error) {
-    return { mode: "demo", error: getErrorMessage(error) };
+    return { mode: "supabase", error: getErrorMessage(error) };
   }
 }
 
@@ -615,10 +656,18 @@ async function getSupabaseBrandProducts(brand: BrandRow): Promise<BrandPortalPro
 
 export async function getBrandDashboardProducts(): Promise<BrandDashboardProductsResult> {
   try {
-    const brand = await ensureOwnerBrand();
+    const { profile, brand } = await getOwnerBrand();
+
+    if (!profile) {
+      return getDemoDashboardProductsResult();
+    }
 
     if (!brand) {
-      return getDemoDashboardProductsResult();
+      return {
+        mode: "supabase",
+        products: [],
+        error: "Save your brand profile before managing products.",
+      };
     }
 
     return {
@@ -686,11 +735,19 @@ async function replaceSupabaseProductDetails(productId: string, input: BrandProd
 
 export async function saveBrandDashboardProduct(input: BrandProductInput): Promise<BrandDashboardProductSaveResult> {
   try {
-    const brand = await ensureOwnerBrand();
+    const { profile, brand } = await getOwnerBrand();
 
-    if (!brand) {
+    if (!profile) {
       const product = saveBrandProduct(input);
       return { mode: "demo", product, products: getBrandProducts() };
+    }
+
+    if (!brand) {
+      return {
+        mode: "supabase",
+        products: [],
+        error: "Save your brand profile before adding products.",
+      };
     }
 
     const supabase = createBrowserSupabaseClient();
@@ -716,15 +773,19 @@ export async function saveBrandDashboardProduct(input: BrandProductInput): Promi
           .update({ ...productPayload, slug: undefined })
           .eq("id", input.id)
           .select("*")
-          .single()
+          .maybeSingle()
       : await supabase
           .from("products")
           .insert({ ...productPayload, slug: productPayload.slug ?? `product-${Date.now()}` })
           .select("*")
-          .single();
+          .maybeSingle();
 
     if (productError) {
       throw new Error(productError.message);
+    }
+
+    if (!product) {
+      throw new Error("Threadocal could not save this product. Please try again.");
     }
 
     await replaceSupabaseProductDetails(product.id, input);
@@ -738,11 +799,9 @@ export async function saveBrandDashboardProduct(input: BrandProductInput): Promi
       products,
     };
   } catch (error) {
-    const product = saveBrandProduct(input);
     return {
-      mode: "demo",
-      product,
-      products: getBrandProducts(),
+      mode: "supabase",
+      products: [],
       error: getErrorMessage(error),
     };
   }
@@ -782,10 +841,14 @@ export async function duplicateBrandDashboardProduct(productId: string) {
 
 export async function deleteBrandDashboardProduct(productId: string) {
   try {
-    const brand = await ensureOwnerBrand();
+    const { profile, brand } = await getOwnerBrand();
+
+    if (!profile) {
+      return getDemoDashboardProductsResult();
+    }
 
     if (!brand) {
-      return getDemoDashboardProductsResult();
+      return { mode: "supabase" as const, products: [], error: "Save your brand profile before deleting products." };
     }
 
     const supabase = createBrowserSupabaseClient();
@@ -811,10 +874,14 @@ export async function deleteBrandDashboardProduct(productId: string) {
 
 export async function updateBrandDashboardInventoryQuantity(productId: string, variantId: string, quantity: number) {
   try {
-    const brand = await ensureOwnerBrand();
+    const { profile, brand } = await getOwnerBrand();
+
+    if (!profile) {
+      return getDemoDashboardProductsResult();
+    }
 
     if (!brand) {
-      return getDemoDashboardProductsResult();
+      return { mode: "supabase" as const, products: [], error: "Save your brand profile before editing inventory." };
     }
 
     const supabase = createBrowserSupabaseClient();

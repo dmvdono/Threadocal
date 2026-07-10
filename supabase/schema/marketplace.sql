@@ -8,6 +8,7 @@ create table if not exists public.brands (
 
 alter table public.brands add column if not exists owner_profile_id uuid;
 alter table public.brands add column if not exists name text;
+alter table public.brands add column if not exists brand_name text;
 alter table public.brands add column if not exists slug text;
 alter table public.brands add column if not exists tagline text;
 alter table public.brands add column if not exists description text;
@@ -41,6 +42,33 @@ alter table public.brands alter column verified set default false;
 alter table public.brands alter column pickup_available set default true;
 alter table public.brands alter column created_at set default now();
 alter table public.brands alter column updated_at set default now();
+
+update public.brands
+set name = coalesce(nullif(name, ''), nullif(brand_name, ''))
+where name is null or name = '';
+
+update public.brands
+set brand_name = coalesce(nullif(brand_name, ''), nullif(name, ''))
+where brand_name is null or brand_name = '';
+
+-- Run these checks before creating the unique owner index in production.
+-- If either query returns rows, keep the oldest row for each key and remove or merge the others before continuing.
+select owner_profile_id, count(*) as duplicate_brand_rows
+from public.brands
+where owner_profile_id is not null
+group by owner_profile_id
+having count(*) > 1;
+
+select id, count(*) as duplicate_profile_rows
+from public.profiles
+group by id
+having count(*) > 1;
+
+select lower(email) as email, count(*) as duplicate_profile_email_rows
+from public.profiles
+where email is not null
+group by lower(email)
+having count(*) > 1;
 
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid()
@@ -231,6 +259,7 @@ add constraint product_images_moderation_status_check
 check (moderation_status in ('pending', 'approved', 'rejected'));
 
 create unique index if not exists brands_slug_key on public.brands using btree (slug);
+create unique index if not exists brands_owner_profile_id_key on public.brands using btree (owner_profile_id) where owner_profile_id is not null;
 create unique index if not exists products_brand_id_slug_key on public.products using btree (brand_id, slug);
 create unique index if not exists product_variants_product_id_size_color_key on public.product_variants using btree (product_id, size, color);
 

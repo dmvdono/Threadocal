@@ -76,6 +76,12 @@ export function BrandProfileEditor() {
 
     const result = await saveBrandDashboardProfile(form);
     setMode(result.mode);
+
+    if (result.error) {
+      setMessage(result.error);
+      return;
+    }
+
     setMessage(result.mode === "supabase" ? "Brand profile saved." : "Demo mode active. Profile was not saved to Supabase.");
   }
 

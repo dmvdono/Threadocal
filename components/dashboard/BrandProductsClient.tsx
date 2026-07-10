@@ -67,7 +67,7 @@ export function BrandProductsClient() {
       setMode(result.mode);
 
       if (result.error) {
-        setMessage(`Demo mode active: ${result.error}`);
+        setMessage(result.mode === "demo" ? `Demo mode active: ${result.error}` : result.error);
       }
     }
 
@@ -106,6 +106,12 @@ export function BrandProductsClient() {
     const result = await saveBrandDashboardProduct(form);
     setProducts(result.products);
     setMode(result.mode);
+
+    if (result.error) {
+      setMessage(result.error);
+      return;
+    }
+
     setMessage(`${form.id ? "Product updated" : "Product added"}${result.mode === "demo" ? " in demo mode" : ""}.`);
     resetForm();
   }
