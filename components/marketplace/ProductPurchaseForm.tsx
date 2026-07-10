@@ -12,10 +12,12 @@ type ProductPurchaseFormProps = {
 
 export function ProductPurchaseForm({ product }: ProductPurchaseFormProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [fulfillmentMethod, setFulfillmentMethod] = useState<FulfillmentMethod>("shipping");
   const [pickupSlot, setPickupSlot] = useState<string | null>(null);
   const hasSizes = Boolean(product.sizes?.length);
+  const hasColors = Boolean(product.colors?.length);
   const canPickup = Boolean(product.pickupAvailable);
 
   function updateFulfillmentMethod(nextMethod: FulfillmentMethod) {
@@ -43,6 +45,24 @@ export function ProductPurchaseForm({ product }: ProductPurchaseFormProps) {
                 type="button"
               >
                 {size}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {hasColors && (
+        <fieldset className="option-group">
+          <legend>Color</legend>
+          <div className="size-row">
+            {product.colors?.map((color) => (
+              <button
+                className={selectedColor === color ? "active" : ""}
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                type="button"
+              >
+                {color}
               </button>
             ))}
           </div>

@@ -11,6 +11,12 @@ import { routes } from "@/utils/routes";
 const trackingSteps: { label: string; status: OrderStatus }[] = [
   { label: "Order placed", status: "order_placed" },
   { label: "Brand preparing order", status: "brand_preparing" },
+  { label: "Completed", status: "completed" },
+];
+
+const pickupSteps: { label: string; status: OrderStatus }[] = [
+  { label: "Pickup order placed", status: "order_placed" },
+  { label: "Brand preparing pickup", status: "brand_preparing" },
   { label: "Ready for pickup", status: "ready_for_pickup" },
   { label: "Picked up", status: "picked_up" },
   { label: "Completed", status: "completed" },
@@ -78,14 +84,16 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
   }
 
   const activeStepIndex = Math.max(
-    trackingSteps.findIndex((step) => step.status === order.status),
+    (order.pickupSlot ? pickupSteps : trackingSteps).findIndex((step) => step.status === order.status),
     0,
   );
+  const hasPickup = Boolean(order.pickupSlot);
+  const steps = hasPickup ? pickupSteps : trackingSteps;
 
   return (
     <section className="checkout-layout">
       <div className="cart-summary checkout-summary">
-        <h2>Order {order.id}</h2>
+        <h2>{hasPickup ? "Pickup order" : "Shipping order"} {order.id}</h2>
         {order.lines?.map((line) => (
           <article className="checkout-line" key={line.id}>
             <div>
@@ -95,7 +103,7 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
                 {line.selectedSize ? ` · Size ${line.selectedSize}` : ""}
               </span>
               <span>
-                {line.fulfillmentMethod === "local_pickup" ? "Local pickup" : "Shipping"}
+                {line.fulfillmentMethod === "local_pickup" ? "Pickup order" : "Shipping order"}
                 {line.pickupSlot ? ` · ${line.pickupSlot}` : ""}
               </span>
             </div>
@@ -107,7 +115,7 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
           <strong>{formatCents(order.totalCents)}</strong>
         </p>
         <div className="tracking-list">
-          {trackingSteps.map((step, index) => (
+          {steps.map((step, index) => (
             <div className={index <= activeStepIndex ? "active" : ""} key={step.status}>
               {step.label}
             </div>
@@ -116,15 +124,33 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
       </div>
 
       <aside className="cart-summary">
-        <h2>Confirmation</h2>
-        <div className="pickup-box">
-          <h3>Pickup location</h3>
-          <p>{order.pickupLocation}</p>
-        </div>
-        <div className="pickup-box">
-          <h3>Pickup time</h3>
-          <p>{order.pickupSlot ?? "Shipping selected."}</p>
-        </div>
+        <h2>{hasPickup ? "Pickup confirmation" : "Shipping details"}</h2>
+        {hasPickup ? (
+          <>
+            <div className="pickup-box">
+              <h3>Pickup location</h3>
+              <p>{order.pickupLocation}</p>
+            </div>
+            <div className="pickup-box">
+              <h3>Pickup time</h3>
+              <p>{order.pickupSlot}</p>
+            </div>
+          </>
+        ) : (
+          <div className="pickup-box">
+            <h3>Shipping address</h3>
+            {order.shippingAddress ? (
+              <p>
+                {order.shippingAddress.fullName}<br />
+                {order.shippingAddress.line1}{order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ""}<br />
+                {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+              </p>
+            ) : (
+              <p>No shipping address was saved for this demo order.</p>
+            )}
+            {order.trackingNumber ? <p>Tracking number: {order.trackingNumber}</p> : <p>Tracking number will appear here when the brand adds one.</p>}
+          </div>
+        )}
         {order.status === "ready_for_pickup" && (
           <button className="primary-link" onClick={handleConfirmPickup} type="button">
             Confirm pickup
@@ -136,7 +162,11 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
           </button>
         )}
         {order.status !== "ready_for_pickup" && order.status !== "picked_up" && order.status !== "completed" && (
-          <p className="option-note">The brand will update preparation and pickup readiness from the brand orders page.</p>
+          <p className="option-note">
+            {hasPickup
+              ? "The brand will update preparation and pickup readiness from the brand orders page."
+              : "The brand will update shipping status. Tracking appears only after a tracking number is added."}
+          </p>
         )}
         <form className="dispute-form" onSubmit={handleIssueSubmit}>
           <h3>Something went wrong</h3>

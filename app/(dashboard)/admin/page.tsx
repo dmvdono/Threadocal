@@ -1,15 +1,5 @@
-import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient";
-import { ThreadocalPage } from "@/components/layout/ThreadocalPage";
+import { AdminDashboardGuard } from "@/components/admin/AdminDashboardGuard";
 
 export default function AdminPage() {
-  return (
-    <ThreadocalPage
-      breadcrumbs={[{ label: "Admin" }]}
-      eyebrow="Operations"
-      title="Admin dashboard"
-      intro="Demo marketplace operations for approvals, disputes, product moderation, reports, and local audit activity."
-    >
-      <AdminDashboardClient />
-    </ThreadocalPage>
-  );
+  return <AdminDashboardGuard />;
 }

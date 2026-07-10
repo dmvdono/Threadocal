@@ -21,6 +21,13 @@ export function LoginForm() {
 
     return new URLSearchParams(window.location.search).get("redirect");
   }, []);
+  const requestedRole = useMemo(() => {
+    if (typeof window === "undefined") {
+      return "customer";
+    }
+
+    return new URLSearchParams(window.location.search).get("role") === "brand_owner" ? "brand_owner" : "customer";
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,7 +82,7 @@ export function LoginForm() {
         </button>
         <p>
           New to Threadocal?{" "}
-          <Link className="secondary-link" href={routes.signup}>
+          <Link className="secondary-link" href={`${routes.signup}?role=${requestedRole}`}>
             Create an account
           </Link>
         </p>

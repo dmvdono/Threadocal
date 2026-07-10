@@ -7,14 +7,32 @@ import type { Order, OrderStatus } from "@/types/order";
 import { formatCents } from "@/utils/money";
 import { routes } from "@/utils/routes";
 
-const brandStatuses: { label: string; status: OrderStatus }[] = [
-  { label: "Order placed", status: "order_placed" },
-  { label: "Brand preparing order", status: "brand_preparing" },
+const pickupStatuses: { label: string; status: OrderStatus }[] = [
+  { label: "Pickup order placed", status: "order_placed" },
+  { label: "Preparing pickup", status: "brand_preparing" },
   { label: "Ready for pickup", status: "ready_for_pickup" },
 ];
 
-function getStatusLabel(status: OrderStatus) {
-  return brandStatuses.find((item) => item.status === status)?.label ?? status.replaceAll("_", " ");
+const shippingStatuses: { label: string; status: OrderStatus }[] = [
+  { label: "Shipping order placed", status: "order_placed" },
+  { label: "Preparing shipment", status: "brand_preparing" },
+  { label: "Shipping complete", status: "completed" },
+];
+
+function hasPickupLine(order: Order) {
+  return order.lines?.some((line) => line.fulfillmentMethod === "local_pickup") ?? false;
+}
+
+function hasShippingLine(order: Order) {
+  return order.lines?.some((line) => line.fulfillmentMethod === "shipping") ?? false;
+}
+
+function getStatusActions(order: Order) {
+  return hasPickupLine(order) ? pickupStatuses : shippingStatuses;
+}
+
+function getStatusLabel(order: Order) {
+  return getStatusActions(order).find((item) => item.status === order.status)?.label ?? order.status.replaceAll("_", " ");
 }
 
 export function BrandOrdersClient() {
@@ -56,11 +74,15 @@ export function BrandOrdersClient() {
 
   return (
     <section className="brand-orders">
-      {orders.map((order) => (
+      {orders.map((order) => {
+        const pickupOrder = hasPickupLine(order);
+        const shippingOrder = hasShippingLine(order);
+
+        return (
         <article className="brand-order-card" key={order.id}>
           <div>
-            <p className="eyebrow">{getStatusLabel(order.status)}</p>
-            <h2>{order.id}</h2>
+            <p className="eyebrow">{getStatusLabel(order)}</p>
+            <h2>{pickupOrder ? "Pickup order" : "Shipping order"} {order.id}</h2>
             <p>Total {formatCents(order.totalCents)}</p>
             {order.dispute && (
               <p className="auth-message error" role="status">
@@ -76,14 +98,30 @@ export function BrandOrdersClient() {
                 <span>
                   Qty {line.quantity}
                   {line.selectedSize ? ` · Size ${line.selectedSize}` : ""}
-                  {line.fulfillmentMethod === "local_pickup" ? " · Local pickup" : " · Shipping"}
+                  {line.fulfillmentMethod === "local_pickup" ? " · Pickup order" : " · Shipping order"}
                 </span>
               </p>
             ))}
+            {pickupOrder && (
+              <p>
+                <strong>Pickup</strong>
+                <span>{order.pickupSlot ?? "Pickup time not selected"}</span>
+              </p>
+            )}
+            {shippingOrder && (
+              <p>
+                <strong>Shipping</strong>
+                <span>
+                  {order.shippingAddress
+                    ? `${order.shippingAddress.line1}, ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}`
+                    : "No shipping address saved"}
+                </span>
+              </p>
+            )}
           </div>
 
           <div className="brand-status-actions">
-            {brandStatuses.map((item) => (
+            {getStatusActions(order).map((item) => (
               <button
                 className={order.status === item.status ? "active" : ""}
                 disabled={order.status === "completed" || order.status === "picked_up" || order.status === "disputed"}
@@ -95,11 +133,12 @@ export function BrandOrdersClient() {
               </button>
             ))}
             <Link className="secondary-link" href={`${routes.orders}/${order.id}`}>
-              View customer tracking
+              View customer order
             </Link>
           </div>
         </article>
-      ))}
+        );
+      })}
     </section>
   );
 }

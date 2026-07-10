@@ -12,7 +12,6 @@ export const mainNavItems: NavItem[] = [
 export const accountNavItems: NavItem[] = [
   { label: "Dashboard", href: routes.dashboard },
   { label: "Brand Dashboard", href: routes.brandDashboard },
-  { label: "Admin", href: routes.admin },
 ];
 
 export const featuredBrands: BrandPreview[] = [

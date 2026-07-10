@@ -8,13 +8,19 @@ import {
   getAdminActivityLog,
   getAdminBrandQueue,
   getAdminOverview,
+  getMarketplaceImageReviewsForAdmin,
+  getMarketplaceBrandsForAdmin,
   getDisputeDecisionStatus,
   getProductModerationStatus,
   markBrandVerified,
+  updateMarketplaceImageModeration,
+  updateMarketplaceBrandApproval,
+  updateMarketplaceBrandVerified,
   updateBrandApproval,
   updateDisputeDecision,
   updateProductModeration,
 } from "@/services/admin";
+import type { AdminMarketplaceBrand, AdminMarketplaceImageReview } from "@/services/admin";
 import { BRAND_PORTAL_UPDATED_EVENT, getBrandProducts } from "@/services/brand-portal";
 import { getDemoOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
 import type { AdminActivityLogItem, AdminBrandSubmission } from "@/types/admin";
@@ -23,11 +29,12 @@ import type { BrandPortalProduct } from "@/types/product";
 import { formatCents } from "@/utils/money";
 import { routes } from "@/utils/routes";
 
-type AdminTab = "overview" | "brands" | "disputes" | "products" | "reports";
+type AdminTab = "overview" | "brands" | "images" | "disputes" | "products" | "reports";
 
 const adminTabs: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "brands", label: "Brands" },
+  { id: "images", label: "Images" },
   { id: "disputes", label: "Disputes" },
   { id: "products", label: "Products" },
   { id: "reports", label: "Reports" },
@@ -36,29 +43,47 @@ const adminTabs: { id: AdminTab; label: string }[] = [
 export function AdminDashboardClient() {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [brandQueue, setBrandQueue] = useState<AdminBrandSubmission[]>([]);
+  const [marketplaceBrands, setMarketplaceBrands] = useState<AdminMarketplaceBrand[]>([]);
+  const [marketplaceImages, setMarketplaceImages] = useState<AdminMarketplaceImageReview[]>([]);
+  const [adminMessage, setAdminMessage] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<BrandPortalProduct[]>([]);
   const [activityLog, setActivityLog] = useState<AdminActivityLogItem[]>([]);
 
-  function syncAdminData() {
+  async function syncAdminData() {
     setBrandQueue(getAdminBrandQueue());
     setOrders(getDemoOrders());
     setProducts(getBrandProducts());
     setActivityLog(getAdminActivityLog());
+
+    try {
+      const [brands, images] = await Promise.all([
+        getMarketplaceBrandsForAdmin(),
+        getMarketplaceImageReviewsForAdmin(),
+      ]);
+      setMarketplaceBrands(brands);
+      setMarketplaceImages(images);
+    } catch (error) {
+      setAdminMessage(error instanceof Error ? error.message : "Unable to load Supabase brands.");
+    }
   }
 
   useEffect(() => {
-    queueMicrotask(syncAdminData);
-    window.addEventListener(ADMIN_UPDATED_EVENT, syncAdminData);
-    window.addEventListener(ORDERS_UPDATED_EVENT, syncAdminData);
-    window.addEventListener(BRAND_PORTAL_UPDATED_EVENT, syncAdminData);
-    window.addEventListener("storage", syncAdminData);
+    function handleAdminDataSync() {
+      void syncAdminData();
+    }
+
+    queueMicrotask(handleAdminDataSync);
+    window.addEventListener(ADMIN_UPDATED_EVENT, handleAdminDataSync);
+    window.addEventListener(ORDERS_UPDATED_EVENT, handleAdminDataSync);
+    window.addEventListener(BRAND_PORTAL_UPDATED_EVENT, handleAdminDataSync);
+    window.addEventListener("storage", handleAdminDataSync);
 
     return () => {
-      window.removeEventListener(ADMIN_UPDATED_EVENT, syncAdminData);
-      window.removeEventListener(ORDERS_UPDATED_EVENT, syncAdminData);
-      window.removeEventListener(BRAND_PORTAL_UPDATED_EVENT, syncAdminData);
-      window.removeEventListener("storage", syncAdminData);
+      window.removeEventListener(ADMIN_UPDATED_EVENT, handleAdminDataSync);
+      window.removeEventListener(ORDERS_UPDATED_EVENT, handleAdminDataSync);
+      window.removeEventListener(BRAND_PORTAL_UPDATED_EVENT, handleAdminDataSync);
+      window.removeEventListener("storage", handleAdminDataSync);
     };
   }, []);
 
@@ -69,22 +94,43 @@ export function AdminDashboardClient() {
 
   function handleBrandStatus(brandId: string, status: "approved" | "rejected") {
     updateBrandApproval(brandId, status);
-    syncAdminData();
+    void syncAdminData();
   }
 
   function handleBrandVerified(brandId: string) {
     markBrandVerified(brandId);
-    syncAdminData();
+    void syncAdminData();
+  }
+
+  async function handleMarketplaceBrandStatus(brandId: string, status: "approved" | "rejected" | "suspended") {
+    setAdminMessage(null);
+    await updateMarketplaceBrandApproval(brandId, status);
+    setAdminMessage(`Marketplace brand ${status}.`);
+    await syncAdminData();
+  }
+
+  async function handleMarketplaceBrandVerified(brandId: string, verified: boolean) {
+    setAdminMessage(null);
+    await updateMarketplaceBrandVerified(brandId, verified);
+    setAdminMessage(verified ? "Brand marked verified." : "Brand verification removed.");
+    await syncAdminData();
+  }
+
+  async function handleMarketplaceImageStatus(review: AdminMarketplaceImageReview, status: "approved" | "rejected") {
+    setAdminMessage(null);
+    await updateMarketplaceImageModeration(review, status);
+    setAdminMessage(`Image ${status}.`);
+    await syncAdminData();
   }
 
   function handleDisputeStatus(orderId: string, status: "customer" | "brand" | "investigation") {
     updateDisputeDecision(orderId, status);
-    syncAdminData();
+    void syncAdminData();
   }
 
   function handleProductStatus(productId: string, status: "visible" | "flagged" | "hidden") {
     updateProductModeration(productId, status);
-    syncAdminData();
+    void syncAdminData();
   }
 
   return (
@@ -145,6 +191,12 @@ export function AdminDashboardClient() {
                 Moderate Products
               </button>
             </AdminPanel>
+            <AdminPanel title="Image review">
+              <p>{marketplaceImages.filter((image) => image.moderationStatus === "pending").length} uploaded images are waiting for review.</p>
+              <button type="button" onClick={() => setActiveTab("images")}>
+                Review Images
+              </button>
+            </AdminPanel>
             <AdminPanel title="Activity log">
               <p>{activityLog.length} local admin actions recorded in this browser.</p>
               <button type="button" onClick={() => setActiveTab("reports")}>
@@ -157,6 +209,35 @@ export function AdminDashboardClient() {
 
       {activeTab === "brands" && (
         <div className="admin-list" aria-label="Brand approval queue">
+          {adminMessage && <p className="auth-message success">{adminMessage}</p>}
+          {marketplaceBrands.map((brand) => (
+            <article className="admin-card" key={brand.id}>
+              <div>
+                <p className="eyebrow">{brand.approval_status}{brand.verified ? " · verified" : ""}</p>
+                <h2>{brand.name}</h2>
+                <p>{brand.description || "No Supabase brand bio yet."}</p>
+                <div className="product-meta">
+                  <span>@{brand.slug}</span>
+                  <span>{[brand.city, brand.state].filter(Boolean).join(", ") || "No location"}</span>
+                  <span>{brand.website_url || "No website"}</span>
+                </div>
+              </div>
+              <div className="admin-actions">
+                <button type="button" onClick={() => handleMarketplaceBrandStatus(brand.id, "approved")}>
+                  Approve
+                </button>
+                <button type="button" onClick={() => handleMarketplaceBrandStatus(brand.id, "rejected")}>
+                  Reject
+                </button>
+                <button type="button" onClick={() => handleMarketplaceBrandStatus(brand.id, "suspended")}>
+                  Suspend
+                </button>
+                <button type="button" onClick={() => handleMarketplaceBrandVerified(brand.id, !brand.verified)}>
+                  {brand.verified ? "Remove Verified" : "Mark Verified"}
+                </button>
+              </div>
+            </article>
+          ))}
           {brandQueue.map((brand) => (
             <article className="admin-card" key={brand.id}>
               <div>
@@ -183,6 +264,36 @@ export function AdminDashboardClient() {
               </div>
             </article>
           ))}
+        </div>
+      )}
+
+      {activeTab === "images" && (
+        <div className="admin-list" aria-label="Image review queue">
+          {adminMessage && <p className="auth-message success">{adminMessage}</p>}
+          {marketplaceImages.length === 0 ? (
+            <AdminEmptyState title="No uploaded marketplace images" body="Brand logos, banners, and product images will appear here after brands upload files." />
+          ) : (
+            marketplaceImages.map((review) => (
+              <article className="admin-card" key={review.id}>
+                <div>
+                  <p className="eyebrow">{review.moderationStatus} · {review.imageType.replaceAll("_", " ")}</p>
+                  <h2>{review.productName ?? review.brandName}</h2>
+                  <p>{review.productName ? review.brandName : "Brand profile image"}</p>
+                  <div className="portal-product-image tone-graphite">
+                    <img src={review.imageUrl} alt={`${review.productName ?? review.brandName} upload`} />
+                  </div>
+                </div>
+                <div className="admin-actions">
+                  <button type="button" onClick={() => handleMarketplaceImageStatus(review, "approved")}>
+                    Approve Image
+                  </button>
+                  <button type="button" onClick={() => handleMarketplaceImageStatus(review, "rejected")}>
+                    Reject Image
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
         </div>
       )}
 

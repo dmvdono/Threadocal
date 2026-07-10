@@ -56,7 +56,7 @@ export function CartPageClient() {
       <section className="market-row">
         <article className="market-panel">
           <h2>Your cart is empty</h2>
-          <p>Browse demo products and add something to your cart to preview the local checkout flow.</p>
+          <p>Browse demo products and add something to your cart to preview pickup or shipping checkout.</p>
           <Link className="primary-link" href={routes.shop}>
             Shop Demo Products
           </Link>
@@ -84,7 +84,7 @@ export function CartPageClient() {
                 <span>{formatCents(unitPrice)}</span>
                 {entry.item.selectedSize && <small>Size {entry.item.selectedSize}</small>}
                 <small>
-                  {entry.item.fulfillmentMethod === "local_pickup" ? "Local pickup" : "Shipping"}
+                  {entry.item.fulfillmentMethod === "local_pickup" ? "Pickup order" : "Shipping order"}
                   {entry.item.pickupSlot ? ` · ${entry.item.pickupSlot}` : ""}
                 </small>
               </div>
@@ -122,12 +122,8 @@ export function CartPageClient() {
           <strong>{formatCents(subtotalCents)}</strong>
         </p>
         <div className="pickup-box">
-          <h3>Local pickup</h3>
-          <p>Pickup scheduling will connect to brand locations after Supabase products and orders are live.</p>
-          <label>
-            <input type="checkbox" />
-            Prefer local pickup when available
-          </label>
+          <h3>Fulfillment</h3>
+          <p>Pickup items will use pickup windows. Shipping items will request a shipping address at checkout.</p>
         </div>
         <Link className="primary-link" href={routes.checkout}>
           Demo Checkout

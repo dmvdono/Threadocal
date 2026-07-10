@@ -2,24 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { BrandPortalNav } from "@/components/dashboard/BrandPortalNav";
-import { getBrandProducts, updateInventoryQuantity } from "@/services/brand-portal";
+import { getBrandDashboardProducts, updateBrandDashboardInventoryQuantity } from "@/services/brand-portal";
 import type { BrandPortalProduct } from "@/types/product";
 
 export function BrandInventoryClient() {
   const [products, setProducts] = useState<BrandPortalProduct[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    queueMicrotask(() => setProducts(getBrandProducts()));
+    async function loadProducts() {
+      const result = await getBrandDashboardProducts();
+      setProducts(result.products);
+
+      if (result.error) {
+        setMessage(`Demo mode active: ${result.error}`);
+      }
+    }
+
+    void loadProducts();
   }, []);
 
-  function adjustQuantity(productId: string, variantId: string, quantity: number) {
-    setProducts(updateInventoryQuantity(productId, variantId, quantity));
+  async function adjustQuantity(productId: string, variantId: string, quantity: number) {
+    const result = await updateBrandDashboardInventoryQuantity(productId, variantId, quantity);
+    setProducts(result.products);
+
+    if (result.error) {
+      setMessage(`Demo mode active: ${result.error}`);
+    }
   }
 
   return (
     <>
       <BrandPortalNav />
       <section className="portal-table-wrap">
+        {message && <p className="auth-message success">{message}</p>}
         <table className="portal-table">
           <thead>
             <tr>

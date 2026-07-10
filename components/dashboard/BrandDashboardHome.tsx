@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BrandPortalNav } from "@/components/dashboard/BrandPortalNav";
-import { BRAND_PORTAL_UPDATED_EVENT, getBrandProducts } from "@/services/brand-portal";
+import { BRAND_PORTAL_UPDATED_EVENT, getBrandDashboardProducts } from "@/services/brand-portal";
 import { getDemoOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
 import type { Order } from "@/types/order";
 import type { BrandPortalProduct } from "@/types/product";
@@ -13,14 +13,17 @@ import { routes } from "@/utils/routes";
 export function BrandDashboardHome() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<BrandPortalProduct[]>([]);
+  const [mode, setMode] = useState<"supabase" | "demo">("demo");
 
   useEffect(() => {
-    function syncDashboard() {
+    async function syncDashboard() {
       setOrders(getDemoOrders());
-      setProducts(getBrandProducts());
+      const result = await getBrandDashboardProducts();
+      setProducts(result.products);
+      setMode(result.mode);
     }
 
-    queueMicrotask(syncDashboard);
+    void syncDashboard();
     window.addEventListener(ORDERS_UPDATED_EVENT, syncDashboard);
     window.addEventListener(BRAND_PORTAL_UPDATED_EVENT, syncDashboard);
     window.addEventListener("storage", syncDashboard);
@@ -67,7 +70,7 @@ export function BrandDashboardHome() {
           <strong>{stats.pendingPickupOrders}</strong>
         </article>
         <article>
-          <span>Demo revenue</span>
+          <span>{mode === "supabase" ? "Revenue" : "Demo revenue"}</span>
           <strong>{formatCents(stats.demoRevenue)}</strong>
         </article>
         <article>

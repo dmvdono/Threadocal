@@ -1,4 +1,5 @@
 import { BrandDashboardHome } from "@/components/dashboard/BrandDashboardHome";
+import { BrandProfileEditor } from "@/components/dashboard/BrandProfileEditor";
 import { ThreadocalPage } from "@/components/layout/ThreadocalPage";
 
 export default function BrandDashboardPage() {
@@ -14,6 +15,7 @@ export default function BrandDashboardPage() {
         { title: "Insights", body: "Demo analytics placeholders for profile views, customer interest, and sales signals." },
       ]}
     >
+      <BrandProfileEditor />
       <BrandDashboardHome />
     </ThreadocalPage>
   );

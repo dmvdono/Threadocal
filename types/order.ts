@@ -9,6 +9,15 @@ export type OrderStatus =
   | "disputed"
   | "cancelled";
 
+export type ShippingAddress = {
+  fullName: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+};
+
 export type DemoOrderLine = {
   id: string;
   productId: string;
@@ -36,6 +45,8 @@ export type Order = {
   lines?: DemoOrderLine[];
   pickupLocation?: string;
   pickupSlot?: string | null;
+  shippingAddress?: ShippingAddress | null;
+  trackingNumber?: string | null;
   dispute?: DemoDispute;
   subtotalCents: number;
   totalCents: number;

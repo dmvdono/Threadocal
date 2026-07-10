@@ -10,7 +10,11 @@ export type Product = {
   description?: string;
   category?: ProductCategory;
   imageTone?: string;
+  imageUrls?: string[];
   sizes?: string[];
+  colors?: string[];
+  tags?: string[];
+  releaseDate?: string | null;
   pickupAvailable?: boolean;
   salePriceCents?: number;
   priceCents: number;
@@ -31,6 +35,7 @@ export type BrandInventoryVariant = {
   size: string;
   color: string;
   quantity: number;
+  sku?: string | null;
 };
 
 export type BrandCoupon = {

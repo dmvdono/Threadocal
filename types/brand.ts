@@ -19,8 +19,16 @@ export type BrandProfile = {
   tagline?: string;
   description?: string;
   category?: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
   city: string;
   state: string;
+  zipCode?: string | null;
+  websiteUrl?: string | null;
+  instagramUrl?: string | null;
+  tiktokUrl?: string | null;
+  youtubeUrl?: string | null;
+  verified?: boolean;
   pickupAvailable?: boolean;
   rating?: string;
   productCount?: number;

@@ -3,7 +3,7 @@
 import { demoPickupLocation } from "@/lib/demo/marketplace";
 import { getBrandProducts } from "@/services/brand-portal";
 import { clearCart, getCartItems } from "@/services/cart";
-import type { DemoDispute, DemoOrderLine, Order, OrderStatus } from "@/types/order";
+import type { DemoDispute, DemoOrderLine, Order, OrderStatus, ShippingAddress } from "@/types/order";
 
 const ORDERS_STORAGE_KEY = "threadocal-demo-orders";
 export const ORDERS_UPDATED_EVENT = "threadocal-demo-orders-updated";
@@ -36,7 +36,7 @@ export function getDemoOrder(orderId: string) {
   return readOrdersFromStorage().find((order) => order.id === orderId) ?? null;
 }
 
-export function createDemoOrder() {
+export function createDemoOrder(shippingAddress?: ShippingAddress | null) {
   const cartItems = getCartItems();
   const products = getBrandProducts();
   const lines = cartItems
@@ -70,6 +70,7 @@ export function createDemoOrder() {
 
   const subtotalCents = lines.reduce((total, line) => total + line.lineTotalCents, 0);
   const pickupSlot = lines.find((line) => line.fulfillmentMethod === "local_pickup")?.pickupSlot ?? null;
+  const hasShipping = lines.some((line) => line.fulfillmentMethod === "shipping");
   const now = new Date().toISOString();
   const order: Order = {
     id: `demo-${Date.now()}`,
@@ -77,6 +78,8 @@ export function createDemoOrder() {
     lines,
     pickupLocation: demoPickupLocation,
     pickupSlot,
+    shippingAddress: hasShipping ? shippingAddress ?? null : null,
+    trackingNumber: null,
     subtotalCents,
     totalCents: subtotalCents,
     createdAt: now,

@@ -2,23 +2,24 @@ import Link from "next/link";
 import { FavoriteProductButton } from "@/components/customer/FavoriteProductButton";
 import type { Product } from "@/types/product";
 import { formatCents } from "@/utils/money";
-import { routes } from "@/utils/routes";
 
 type ProductCardProps = {
   product: Product;
 };
 
 export function ProductCard({ product }: ProductCardProps) {
+  const productHref = `/product/${product.slug}`;
+
   return (
     <article className="product-card">
       <FavoriteProductButton className="heart" label={`Favorite ${product.name}`} productId={product.id} />
-      <Link className={`product-art tone-${product.imageTone ?? "graphite"}`} href={`${routes.shop}/${product.slug}`}>
-        <span>{product.brandName}</span>
+      <Link className={`product-art tone-${product.imageUrls?.[0] ? "graphite" : product.imageTone ?? "graphite"}`} href={productHref}>
+        {product.imageUrls?.[0] ? <img src={product.imageUrls[0]} alt={product.name} /> : <span>{product.brandName}</span>}
       </Link>
       <div className="product-info">
         <p>{product.brandName}</p>
         <h2>
-          <Link href={`${routes.shop}/${product.slug}`}>{product.name}</Link>
+          <Link href={productHref}>{product.name}</Link>
         </h2>
         <div className="product-meta">
           <span>{product.category}</span>
@@ -34,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <strong>{formatCents(product.priceCents)}</strong>
           )}
         </div>
-        <Link className="primary-link" href={`${routes.shop}/${product.slug}`}>
+        <Link className="primary-link" href={productHref}>
           Select Options
         </Link>
       </div>

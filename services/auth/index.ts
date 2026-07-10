@@ -18,6 +18,17 @@ export type AuthResult = AuthSuccess | AuthFailure;
 
 const SUPABASE_CONNECTION_ERROR =
   "Threadocal could not connect to Supabase. Check that your Supabase project is active and that NEXT_PUBLIC_SUPABASE_URL plus your public anon or publishable key match Project Settings > API.";
+const PROFILE_SELECT = "id, email, full_name, role, city, state, zip_code, created_at";
+
+type SignupProfileInput = {
+  id: string;
+  email: string;
+  fullName: string;
+  role: Exclude<UserRole, "admin">;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -208,6 +219,35 @@ async function runFormAuthRequest<T>(request: () => PromiseLike<T> | T): Promise
   }
 }
 
+async function createSignupProfile(
+  supabase: ReturnType<typeof createBrowserSupabaseClient>,
+  input: SignupProfileInput,
+) {
+  const email = input.email.trim().toLowerCase();
+
+  if (!email) {
+    return { error: "Threadocal could not create your profile because the signup email was missing." };
+  }
+
+  const profile = {
+    id: input.id,
+    email,
+    full_name: input.fullName,
+    role: input.role,
+    city: normalizeOptional(input.city),
+    state: normalizeOptional(input.state),
+    zip_code: normalizeOptional(input.zipCode),
+  };
+
+  return runFormAuthRequest(() =>
+    supabase
+      .from("profiles")
+      .upsert(profile, { onConflict: "id" })
+      .select(PROFILE_SELECT)
+      .single(),
+  );
+}
+
 export function getRedirectPathForRole(role: UserRole) {
   if (role === "admin") {
     return routes.admin;
@@ -246,7 +286,7 @@ export async function getCurrentProfile() {
   const { data, error } = await runAuthRequest(() =>
     supabase
       .from("profiles")
-      .select("id, email, full_name, role, city, state, zip_code, created_at")
+      .select(PROFILE_SELECT)
       .eq("id", user.id)
       .single(),
   );
@@ -279,6 +319,7 @@ export async function signup(input: SignupInput): Promise<AuthResult> {
       password: input.password,
       options: {
         data: {
+          email,
           full_name: fullName,
           role: input.role,
           city: normalizeOptional(input.city),
@@ -309,16 +350,6 @@ export async function signup(input: SignupInput): Promise<AuthResult> {
     return { ok: false, error: "Unable to create your account. Please try again." };
   }
 
-  const profile = {
-    id: data.user.id,
-    email,
-    full_name: fullName,
-    role: input.role,
-    city: normalizeOptional(input.city),
-    state: normalizeOptional(input.state),
-    zip_code: normalizeOptional(input.zipCode),
-  };
-
   if (!data.session) {
     return {
       ok: false,
@@ -327,13 +358,15 @@ export async function signup(input: SignupInput): Promise<AuthResult> {
     };
   }
 
-  const profileResult = await runFormAuthRequest(() =>
-    supabase
-      .from("profiles")
-      .insert(profile)
-      .select("id, email, full_name, role, city, state, zip_code, created_at")
-      .single(),
-  );
+  const profileResult = await createSignupProfile(supabase, {
+    id: data.user.id,
+    email,
+    fullName,
+    role: input.role,
+    city: input.city,
+    state: input.state,
+    zipCode: input.zipCode,
+  });
 
   if (profileResult.error) {
     logAuthError("signup profile insert failed", profileResult.error);

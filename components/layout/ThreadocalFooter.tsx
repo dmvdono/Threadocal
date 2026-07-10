@@ -12,6 +12,8 @@ export function ThreadocalFooter() {
         </div>
         <nav aria-label="Customer footer navigation">
           <h2>Customer</h2>
+          <Link href={`${routes.login}?role=customer`}>Customer Login</Link>
+          <Link href={`${routes.signup}?role=customer`}>Customer Sign Up</Link>
           <Link href={routes.account}>My Account</Link>
           <Link href={`${routes.account}#orders`}>Orders</Link>
           <Link href={`${routes.account}#favorites`}>Favorites</Link>
@@ -19,6 +21,8 @@ export function ThreadocalFooter() {
         </nav>
         <nav aria-label="Business footer navigation">
           <h2>Business</h2>
+          <Link href={`${routes.login}?role=brand_owner`}>Brand Login</Link>
+          <Link href={`${routes.signup}?role=brand_owner`}>Brand Sign Up</Link>
           <Link href={routes.brandDashboard}>Brand Dashboard</Link>
           <Link href={routes.brandProducts}>Products</Link>
           <Link href={routes.brandOrders}>Orders</Link>

@@ -12,11 +12,11 @@ import { AuthMessage } from "@/components/auth/AuthMessage";
 export function SignupForm() {
   const router = useRouter();
   const [form, setForm] = useState<SignupInput>(() => {
-    const type =
-      typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("type");
+    const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+    const requestedRole = params?.get("role") ?? params?.get("type");
 
     return {
-      role: type === "brand_owner" ? "brand_owner" : "customer",
+      role: requestedRole === "brand_owner" ? "brand_owner" : "customer",
       fullName: "",
       email: "",
       password: "",

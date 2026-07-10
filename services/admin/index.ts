@@ -1,9 +1,11 @@
 "use client";
 
 import { defaultBrandSubmission, demoBrands } from "@/lib/demo/marketplace";
+import { createBrowserSupabaseClient } from "@/supabase/client";
 import { getBrandProducts } from "@/services/brand-portal";
 import { getDemoOrders } from "@/services/orders";
 import type { DemoBrandSubmission } from "@/types/brand";
+import type { Database, ImageModerationStatus } from "@/types/supabase";
 import type {
   AdminActivityLogItem,
   AdminBrandSubmission,
@@ -21,6 +23,21 @@ const ACTIVITY_LOG_KEY = "threadocal-admin-activity-log";
 const LEGACY_BRAND_SUBMISSION_KEY = "threadocal-demo-brand-submission";
 
 export const ADMIN_UPDATED_EVENT = "threadocal-admin-updated";
+
+export type AdminMarketplaceBrand = Database["public"]["Tables"]["brands"]["Row"];
+type AdminMarketplaceProduct = Database["public"]["Tables"]["products"]["Row"];
+type AdminMarketplaceProductImage = Database["public"]["Tables"]["product_images"]["Row"];
+
+export type AdminMarketplaceImageReview = {
+  id: string;
+  imageUrl: string;
+  imageType: "brand_logo" | "brand_banner" | "product_image";
+  moderationStatus: ImageModerationStatus;
+  brandName: string;
+  productName?: string;
+  brandId?: string;
+  productImageId?: string;
+};
 
 const defaultBrandQueue: AdminBrandSubmission[] = [
   {
@@ -245,4 +262,186 @@ export function getAdminOverview() {
     disputedOrders: orders.filter((order) => order.status === "disputed").length,
     pendingBrandApprovals: brandQueue.filter((brand) => brand.status === "pending").length,
   };
+}
+
+export async function getMarketplaceBrandsForAdmin() {
+  const supabase = createBrowserSupabaseClient();
+  const { data, error } = await supabase
+    .from("brands")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
+export async function updateMarketplaceBrandApproval(
+  brandId: string,
+  approvalStatus: "pending_review" | "approved" | "rejected" | "suspended",
+) {
+  const supabase = createBrowserSupabaseClient();
+  const { error } = await supabase
+    .from("brands")
+    .update({ approval_status: approvalStatus, updated_at: new Date().toISOString() })
+    .eq("id", brandId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateMarketplaceBrandVerified(brandId: string, verified: boolean) {
+  const supabase = createBrowserSupabaseClient();
+  const { error } = await supabase
+    .from("brands")
+    .update({ verified, updated_at: new Date().toISOString() })
+    .eq("id", brandId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function getMarketplaceImageReviewsForAdmin(): Promise<AdminMarketplaceImageReview[]> {
+  const supabase = createBrowserSupabaseClient();
+  const [{ data: brands, error: brandsError }, { data: images, error: imagesError }] = await Promise.all([
+    supabase.from("brands").select("*").order("updated_at", { ascending: false }),
+    supabase.from("product_images").select("*").order("created_at", { ascending: false }),
+  ]);
+
+  if (brandsError) {
+    throw new Error(brandsError.message);
+  }
+
+  if (imagesError) {
+    throw new Error(imagesError.message);
+  }
+
+  const productIds = Array.from(new Set((images ?? []).map((image) => image.product_id).filter(Boolean)));
+  const { data: products, error: productsError } =
+    productIds.length > 0
+      ? await supabase.from("products").select("*").in("id", productIds)
+      : { data: [] as AdminMarketplaceProduct[], error: null };
+
+  if (productsError) {
+    throw new Error(productsError.message);
+  }
+
+  const brandsById = new Map((brands ?? []).map((brand) => [brand.id, brand]));
+  const productsById = new Map((products ?? []).map((product) => [product.id, product]));
+  const brandImageReviews = (brands ?? []).flatMap((brand) => {
+    const reviews: AdminMarketplaceImageReview[] = [];
+
+    if (brand.logo_url) {
+      reviews.push({
+        id: `${brand.id}-logo`,
+        imageUrl: brand.logo_url,
+        imageType: "brand_logo",
+        moderationStatus: brand.logo_moderation_status,
+        brandName: brand.name,
+        brandId: brand.id,
+      });
+    }
+
+    if (brand.banner_url) {
+      reviews.push({
+        id: `${brand.id}-banner`,
+        imageUrl: brand.banner_url,
+        imageType: "brand_banner",
+        moderationStatus: brand.banner_moderation_status,
+        brandName: brand.name,
+        brandId: brand.id,
+      });
+    }
+
+    return reviews;
+  });
+  const productImageReviews = (images ?? []).map((image: AdminMarketplaceProductImage) => {
+    const product = productsById.get(image.product_id);
+    const brand = product ? brandsById.get(product.brand_id) : null;
+
+    return {
+      id: image.id,
+      imageUrl: image.image_url,
+      imageType: "product_image" as const,
+      moderationStatus: image.moderation_status,
+      brandName: brand?.name ?? "Unknown brand",
+      productName: product?.name ?? "Unknown product",
+      productImageId: image.id,
+    };
+  });
+
+  return [...brandImageReviews, ...productImageReviews].sort((a, b) => {
+    if (a.moderationStatus === b.moderationStatus) {
+      return a.brandName.localeCompare(b.brandName);
+    }
+
+    return a.moderationStatus === "pending" ? -1 : 1;
+  });
+}
+
+export async function updateMarketplaceImageModeration(review: AdminMarketplaceImageReview, moderationStatus: ImageModerationStatus) {
+  const supabase = createBrowserSupabaseClient();
+  const reviewedAt = new Date().toISOString();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError) {
+    throw new Error(userError.message);
+  }
+
+  const reviewerId = userData.user?.id ?? null;
+
+  if (review.imageType === "brand_logo" && review.brandId) {
+    const { error } = await supabase
+      .from("brands")
+      .update({
+        logo_moderation_status: moderationStatus,
+        logo_reviewed_at: reviewedAt,
+        logo_reviewed_by: reviewerId,
+        updated_at: reviewedAt,
+      })
+      .eq("id", review.brandId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return;
+  }
+
+  if (review.imageType === "brand_banner" && review.brandId) {
+    const { error } = await supabase
+      .from("brands")
+      .update({
+        banner_moderation_status: moderationStatus,
+        banner_reviewed_at: reviewedAt,
+        banner_reviewed_by: reviewerId,
+        updated_at: reviewedAt,
+      })
+      .eq("id", review.brandId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return;
+  }
+
+  if (review.productImageId) {
+    const { error } = await supabase
+      .from("product_images")
+      .update({
+        moderation_status: moderationStatus,
+        reviewed_at: reviewedAt,
+        reviewed_by: reviewerId,
+      })
+      .eq("id", review.productImageId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
 }
