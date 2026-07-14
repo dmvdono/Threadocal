@@ -4,9 +4,9 @@ import { ThreadocalPage } from "@/components/layout/ThreadocalPage";
 export default function CartPage() {
   return (
     <ThreadocalPage
-      eyebrow="Demo cart"
+      eyebrow="Cart"
       title="Cart"
-      intro="Review demo products stored in localStorage. Checkout, payments, order holds, and pickup scheduling will connect later."
+      intro="Review marketplace products before Stripe test-mode checkout."
       breadcrumbs={[{ label: "Cart" }]}
     >
       <CartPageClient />

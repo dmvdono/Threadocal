@@ -1,12 +1,13 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrandPortalNav } from "@/components/dashboard/BrandPortalNav";
 import {
   deleteBrandDashboardProduct,
   duplicateBrandDashboardProduct,
   getBrandDashboardProducts,
+  MARKETPLACE_IMAGE_MAX_BYTES,
   saveBrandDashboardProduct,
   STANDARD_COLOR_OPTIONS,
   STANDARD_SIZE_OPTIONS,
@@ -35,6 +36,10 @@ const emptyProductForm: BrandProductInput = {
   status: "draft",
 };
 
+function formatFileSize(bytes: number) {
+  return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
+}
+
 function productToForm(product: BrandPortalProduct): BrandProductInput {
   return {
     id: product.id,
@@ -57,8 +62,13 @@ function productToForm(product: BrandPortalProduct): BrandProductInput {
 export function BrandProductsClient() {
   const [products, setProducts] = useState<BrandPortalProduct[]>([]);
   const [form, setForm] = useState<BrandProductInput>(emptyProductForm);
+  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [mode, setMode] = useState<"supabase" | "demo">("demo");
+  const selectedImagePreviews = useMemo(
+    () => selectedImageFiles.map((file) => URL.createObjectURL(file)),
+    [selectedImageFiles],
+  );
 
   useEffect(() => {
     async function loadProducts() {
@@ -67,15 +77,22 @@ export function BrandProductsClient() {
       setMode(result.mode);
 
       if (result.error) {
-        setMessage(result.mode === "demo" ? `Demo mode active: ${result.error}` : result.error);
+        setMessage(result.error);
       }
     }
 
     void loadProducts();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      selectedImagePreviews.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
+    };
+  }, [selectedImagePreviews]);
+
   function resetForm() {
     setForm(emptyProductForm);
+    setSelectedImageFiles([]);
   }
 
   function getPriceCents() {
@@ -103,7 +120,19 @@ export function BrandProductsClient() {
       return;
     }
 
-    const result = await saveBrandDashboardProduct(form);
+    let imageUrls = form.imageUrls.filter(Boolean);
+
+    if (selectedImageFiles.length > 0) {
+      try {
+        const uploadedUrls = await uploadBrandDashboardProductImages(selectedImageFiles);
+        imageUrls = [...imageUrls, ...uploadedUrls];
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Product image upload failed. Existing product images were preserved.");
+        return;
+      }
+    }
+
+    const result = await saveBrandDashboardProduct({ ...form, imageUrls });
     setProducts(result.products);
     setMode(result.mode);
 
@@ -112,7 +141,7 @@ export function BrandProductsClient() {
       return;
     }
 
-    setMessage(`${form.id ? "Product updated" : "Product added"}${result.mode === "demo" ? " in demo mode" : ""}.`);
+    setMessage(`${form.id ? "Product updated" : "Product added"}.`);
     resetForm();
   }
 
@@ -120,14 +149,14 @@ export function BrandProductsClient() {
     const result = await deleteBrandDashboardProduct(productId);
     setProducts(result.products);
     setMode(result.mode);
-    setMessage(result.mode === "demo" ? "Product deleted in demo mode." : "Product deleted.");
+    setMessage("Product deleted.");
   }
 
   async function handleDuplicate(productId: string) {
     const result = await duplicateBrandDashboardProduct(productId);
     setProducts(result.products);
     setMode(result.mode);
-    setMessage(result.mode === "demo" ? "Product duplicated in demo mode." : "Product duplicated.");
+    setMessage("Product duplicated.");
   }
 
   function toggleOption(field: "sizes" | "colors", value: string) {
@@ -147,7 +176,7 @@ export function BrandProductsClient() {
     return product.inventory.reduce((total, variant) => total + variant.quantity, 0);
   }
 
-  async function handleProductImageUpload(event: ChangeEvent<HTMLInputElement>) {
+  function handleProductImageSelect(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
 
     if (files.length === 0) {
@@ -156,15 +185,16 @@ export function BrandProductsClient() {
 
     setMessage(null);
 
-    try {
-      const uploadedUrls = await uploadBrandDashboardProductImages(files);
-      setForm({ ...form, imageUrls: [...form.imageUrls.filter(Boolean), ...uploadedUrls] });
-      setMessage(`${uploadedUrls.length} product image${uploadedUrls.length === 1 ? "" : "s"} uploaded for admin review.`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Product image upload failed.");
-    } finally {
+    const oversizedFile = files.find((file) => file.size > MARKETPLACE_IMAGE_MAX_BYTES);
+
+    if (oversizedFile) {
+      setMessage(`${oversizedFile.name} is larger than 25MB.`);
       event.target.value = "";
+      return;
     }
+
+    setSelectedImageFiles((currentFiles) => [...currentFiles, ...files]);
+    event.target.value = "";
   }
 
   return (
@@ -223,20 +253,40 @@ export function BrandProductsClient() {
             <input
               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               multiple
-              onChange={handleProductImageUpload}
+              onChange={handleProductImageSelect}
               type="file"
             />
-            <span className="option-note">5MB max per image · uploaded images require admin approval before public display</span>
+            <span className="option-note">25MB max per image · uploaded images require admin approval before public display</span>
           </label>
-          {form.imageUrls.filter(Boolean).length > 0 && (
+          {(form.imageUrls.filter(Boolean).length > 0 || selectedImageFiles.length > 0) && (
             <div className="portal-list-item">
               <div>
-                <strong>{form.imageUrls.filter(Boolean).length} image{form.imageUrls.filter(Boolean).length === 1 ? "" : "s"} ready</strong>
-                <span>Saving this product will queue them as pending.</span>
+                <strong>
+                  {form.imageUrls.filter(Boolean).length + selectedImageFiles.length} image
+                  {form.imageUrls.filter(Boolean).length + selectedImageFiles.length === 1 ? "" : "s"} ready
+                </strong>
+                <span>New selected images upload when the product is saved.</span>
+                {selectedImageFiles.length > 0 && (
+                  <span className="upload-file-list">
+                    {selectedImageFiles.map((file) => `${file.name} · ${formatFileSize(file.size)}`).join(" | ")}
+                  </span>
+                )}
               </div>
-              <button type="button" onClick={() => setForm({ ...form, imageUrls: [] })}>
+              <button type="button" onClick={() => {
+                setForm({ ...form, imageUrls: [] });
+                setSelectedImageFiles([]);
+              }}>
                 Clear Images
               </button>
+            </div>
+          )}
+          {selectedImagePreviews.length > 0 && (
+            <div className="upload-preview-grid" aria-label="Selected product image previews">
+              {selectedImagePreviews.map((previewUrl, index) => (
+                <span className="upload-preview" key={previewUrl}>
+                  <img src={previewUrl} alt={`Selected product image ${index + 1}`} />
+                </span>
+              ))}
             </div>
           )}
           <div className="auth-form-grid">
@@ -319,7 +369,10 @@ export function BrandProductsClient() {
                 <p>{getInventoryTotal(product)} in stock</p>
               </div>
               <div className="portal-row-actions">
-                <button onClick={() => setForm(productToForm(product))} type="button">Edit</button>
+                <button onClick={() => {
+                  setSelectedImageFiles([]);
+                  setForm(productToForm(product));
+                }} type="button">Edit</button>
                 <button onClick={() => handleDuplicate(product.id)} type="button">Duplicate</button>
                 <button onClick={() => handleDelete(product.id)} type="button">Delete</button>
               </div>

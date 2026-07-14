@@ -3,14 +3,16 @@
 import Link from "next/link";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { addDemoOrderDispute, getDemoOrder, ORDERS_UPDATED_EVENT, updateDemoOrderStatus } from "@/services/orders";
+import { addOrderDispute, getOrder, ORDERS_UPDATED_EVENT, updateOrderStatus } from "@/services/orders";
 import type { Order, OrderStatus } from "@/types/order";
 import { formatCents } from "@/utils/money";
 import { routes } from "@/utils/routes";
 
-const trackingSteps: { label: string; status: OrderStatus }[] = [
-  { label: "Order placed", status: "order_placed" },
-  { label: "Brand preparing order", status: "brand_preparing" },
+const shippingSteps: { label: string; status: OrderStatus }[] = [
+  { label: "Shipping order placed", status: "order_placed" },
+  { label: "Brand preparing shipment", status: "brand_preparing" },
+  { label: "Shipped", status: "shipped" },
+  { label: "Delivered", status: "delivered" },
   { label: "Completed", status: "completed" },
 ];
 
@@ -31,33 +33,45 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    function syncOrder() {
-      setOrder(getDemoOrder(orderId));
+    async function syncOrder() {
+      try {
+        setOrder(await getOrder(orderId));
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Threadocal could not load this order.");
+      } finally {
+        setLoading(false);
+      }
     }
 
-    queueMicrotask(syncOrder);
+    void syncOrder();
     window.addEventListener(ORDERS_UPDATED_EVENT, syncOrder);
-    window.addEventListener("storage", syncOrder);
 
     return () => {
       window.removeEventListener(ORDERS_UPDATED_EVENT, syncOrder);
-      window.removeEventListener("storage", syncOrder);
     };
   }, [orderId]);
 
-  function handleEverythingFine() {
-    setOrder(updateDemoOrderStatus(orderId, "completed"));
-    setMessage("Thanks. Payment would be released to the brand in the real flow.");
+  async function handleStatus(status: OrderStatus, successMessage: string) {
+    try {
+      setOrder(await updateOrderStatus(orderId, status));
+      setMessage(successMessage);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Threadocal could not update this order.");
+    }
   }
 
   function handleConfirmPickup() {
-    setOrder(updateDemoOrderStatus(orderId, "picked_up"));
-    setMessage("Pickup confirmed. If everything looks good, mark the order complete.");
+    void handleStatus("picked_up", "Pickup confirmed. If everything looks good, mark the order complete.");
   }
 
-  function handleIssueSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleEverythingFine() {
+    void handleStatus("completed", "Thanks. This order is marked complete.");
+  }
+
+  async function handleIssueSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!reason.trim()) {
@@ -65,8 +79,23 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
       return;
     }
 
-    setOrder(addDemoOrderDispute(orderId, { reason, notes }));
-    setMessage("Threadocal will investigate this demo dispute and hold payment while it is reviewed.");
+    try {
+      setOrder(await addOrderDispute(orderId, { reason, notes }));
+      setMessage("Threadocal will investigate this dispute and hold payment while it is reviewed.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Threadocal could not submit this dispute.");
+    }
+  }
+
+  if (loading) {
+    return (
+      <section className="market-row">
+        <article className="market-panel">
+          <h2>Loading order</h2>
+          <p>Threadocal is loading your Supabase order details.</p>
+        </article>
+      </section>
+    );
   }
 
   if (!order) {
@@ -74,9 +103,9 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
       <section className="market-row">
         <article className="market-panel">
           <h2>Order not found</h2>
-          <p>This demo order only exists in the browser where it was created.</p>
+          <p>Threadocal could not find that order for this account.</p>
           <Link className="primary-link" href={routes.shop}>
-            Shop Demo Products
+            Shop Products
           </Link>
         </article>
       </section>
@@ -84,16 +113,17 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
   }
 
   const activeStepIndex = Math.max(
-    (order.pickupSlot ? pickupSteps : trackingSteps).findIndex((step) => step.status === order.status),
+    (order.fulfillmentMethod === "local_pickup" ? pickupSteps : shippingSteps).findIndex((step) => step.status === order.status),
     0,
   );
-  const hasPickup = Boolean(order.pickupSlot);
-  const steps = hasPickup ? pickupSteps : trackingSteps;
+  const hasPickup = order.fulfillmentMethod === "local_pickup";
+  const steps = hasPickup ? pickupSteps : shippingSteps;
 
   return (
     <section className="checkout-layout">
       <div className="cart-summary checkout-summary">
         <h2>{hasPickup ? "Pickup order" : "Shipping order"} {order.id}</h2>
+        <p className="option-note">Payment status: {order.paymentStatus ?? "pending"}</p>
         {order.lines?.map((line) => (
           <article className="checkout-line" key={line.id}>
             <div>
@@ -101,6 +131,7 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
               <span>
                 Qty {line.quantity}
                 {line.selectedSize ? ` · Size ${line.selectedSize}` : ""}
+                {line.selectedColor ? ` · Color ${line.selectedColor}` : ""}
               </span>
               <span>
                 {line.fulfillmentMethod === "local_pickup" ? "Pickup order" : "Shipping order"}
@@ -146,9 +177,9 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
                 {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
               </p>
             ) : (
-              <p>No shipping address was saved for this demo order.</p>
+              <p>No shipping address was saved for this order.</p>
             )}
-            {order.trackingNumber ? <p>Tracking number: {order.trackingNumber}</p> : <p>Tracking number will appear here when the brand adds one.</p>}
+            {order.trackingNumber ? <p>Tracking number: {order.trackingNumber}</p> : <p>Tracking appears only after the brand adds a tracking number.</p>}
           </div>
         )}
         {order.status === "ready_for_pickup" && (
@@ -156,7 +187,7 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
             Confirm pickup
           </button>
         )}
-        {order.status === "picked_up" && (
+        {(order.status === "picked_up" || order.status === "delivered") && (
           <button className="primary-link" onClick={handleEverythingFine} type="button">
             Everything went fine
           </button>

@@ -137,7 +137,7 @@ export function ThreadocalSearch() {
             </button>
           </div>
           {results.length === 0 ? (
-            <p>No local demo matches yet.</p>
+            <p>No local matches yet.</p>
           ) : (
             results.map((result) => (
               <Link

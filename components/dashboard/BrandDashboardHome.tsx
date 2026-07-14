@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BrandPortalNav } from "@/components/dashboard/BrandPortalNav";
 import { BRAND_PORTAL_UPDATED_EVENT, getBrandDashboardProducts } from "@/services/brand-portal";
-import { getDemoOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
+import { getBrandOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
 import type { Order } from "@/types/order";
 import type { BrandPortalProduct } from "@/types/product";
 import { formatCents } from "@/utils/money";
@@ -13,14 +13,16 @@ import { routes } from "@/utils/routes";
 export function BrandDashboardHome() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<BrandPortalProduct[]>([]);
-  const [mode, setMode] = useState<"supabase" | "demo">("demo");
 
   useEffect(() => {
     async function syncDashboard() {
-      setOrders(getDemoOrders());
+      try {
+        setOrders(await getBrandOrders());
+      } catch {
+        setOrders([]);
+      }
       const result = await getBrandDashboardProducts();
       setProducts(result.products);
-      setMode(result.mode);
     }
 
     void syncDashboard();
@@ -39,8 +41,8 @@ export function BrandDashboardHome() {
     const today = new Date().toDateString();
     const todayOrders = orders.filter((order) => new Date(order.createdAt).toDateString() === today).length;
     const pendingPickupOrders = orders.filter((order) => order.status === "ready_for_pickup").length;
-    const demoRevenue = orders
-      .filter((order) => order.status === "completed" || order.status === "picked_up")
+    const revenue = orders
+      .filter((order) => order.status === "completed")
       .reduce((total, order) => total + order.totalCents, 0);
     const lowInventory = products.flatMap((product) =>
       product.inventory
@@ -49,7 +51,7 @@ export function BrandDashboardHome() {
     );
 
     return {
-      demoRevenue,
+      revenue,
       lowInventory,
       pendingPickupOrders,
       productCount: products.length,
@@ -70,8 +72,8 @@ export function BrandDashboardHome() {
           <strong>{stats.pendingPickupOrders}</strong>
         </article>
         <article>
-          <span>{mode === "supabase" ? "Revenue" : "Demo revenue"}</span>
-          <strong>{formatCents(stats.demoRevenue)}</strong>
+          <span>Revenue</span>
+          <strong>{formatCents(stats.revenue)}</strong>
         </article>
         <article>
           <span>Products</span>

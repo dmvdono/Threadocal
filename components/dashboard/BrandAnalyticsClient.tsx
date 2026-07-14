@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BrandPortalNav } from "@/components/dashboard/BrandPortalNav";
-import { getBrandProducts } from "@/services/brand-portal";
-import { getDemoOrders } from "@/services/orders";
+import { getBrandDashboardProducts } from "@/services/brand-portal";
+import { getBrandOrders } from "@/services/orders";
 import type { Order } from "@/types/order";
 import type { BrandPortalProduct } from "@/types/product";
 import { formatCents } from "@/utils/money";
@@ -13,10 +13,18 @@ export function BrandAnalyticsClient() {
   const [products, setProducts] = useState<BrandPortalProduct[]>([]);
 
   useEffect(() => {
-    queueMicrotask(() => {
-      setOrders(getDemoOrders());
-      setProducts(getBrandProducts());
-    });
+    async function syncAnalytics() {
+      try {
+        const [nextOrders, productResult] = await Promise.all([getBrandOrders(), getBrandDashboardProducts()]);
+        setOrders(nextOrders);
+        setProducts(productResult.products);
+      } catch {
+        setOrders([]);
+        setProducts([]);
+      }
+    }
+
+    void syncAnalytics();
   }, []);
 
   const analytics = useMemo(() => {

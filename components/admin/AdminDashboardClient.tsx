@@ -21,8 +21,8 @@ import {
   updateProductModeration,
 } from "@/services/admin";
 import type { AdminMarketplaceBrand, AdminMarketplaceImageReview } from "@/services/admin";
-import { BRAND_PORTAL_UPDATED_EVENT, getBrandProducts } from "@/services/brand-portal";
-import { getDemoOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
+import { BRAND_PORTAL_UPDATED_EVENT, getBrandDashboardProducts } from "@/services/brand-portal";
+import { getCustomerOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
 import type { AdminActivityLogItem, AdminBrandSubmission } from "@/types/admin";
 import type { Order } from "@/types/order";
 import type { BrandPortalProduct } from "@/types/product";
@@ -52,8 +52,14 @@ export function AdminDashboardClient() {
 
   async function syncAdminData() {
     setBrandQueue(getAdminBrandQueue());
-    setOrders(getDemoOrders());
-    setProducts(getBrandProducts());
+    try {
+      setOrders(await getCustomerOrders());
+      const productResult = await getBrandDashboardProducts();
+      setProducts(productResult.products);
+    } catch {
+      setOrders([]);
+      setProducts([]);
+    }
     setActivityLog(getAdminActivityLog());
 
     try {
@@ -152,16 +158,16 @@ export function AdminDashboardClient() {
         <div className="admin-section">
           <div className="portal-metrics admin-metrics">
             <article>
-              <span>Total demo orders</span>
-              <strong>{overview.totalOrders}</strong>
+              <span>Total orders</span>
+              <strong>{orders.length}</strong>
             </article>
             <article>
-              <span>Total demo brands</span>
+              <span>Total brands</span>
               <strong>{overview.totalBrands}</strong>
             </article>
             <article>
-              <span>Total demo products</span>
-              <strong>{overview.totalProducts}</strong>
+              <span>Total products</span>
+              <strong>{products.length || overview.totalProducts}</strong>
             </article>
             <article>
               <span>Disputed orders</span>
@@ -180,7 +186,7 @@ export function AdminDashboardClient() {
               </button>
             </AdminPanel>
             <AdminPanel title="Dispute management">
-              <p>{disputedOrders.length} disputed demo orders need a decision.</p>
+              <p>{disputedOrders.length} disputed orders need a decision.</p>
               <button type="button" onClick={() => setActiveTab("disputes")}>
                 Review Disputes
               </button>
@@ -300,7 +306,7 @@ export function AdminDashboardClient() {
       {activeTab === "disputes" && (
         <div className="admin-list" aria-label="Disputed orders">
           {disputedOrders.length === 0 ? (
-            <AdminEmptyState title="No disputed demo orders" body="Create a demo order and report something went wrong to test dispute handling." />
+            <AdminEmptyState title="No disputed orders" body="Customer-reported order issues will appear here for admin review." />
           ) : (
             disputedOrders.map((order) => (
               <article className="admin-card" key={order.id}>

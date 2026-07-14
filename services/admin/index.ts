@@ -3,7 +3,6 @@
 import { defaultBrandSubmission, demoBrands } from "@/lib/demo/marketplace";
 import { createBrowserSupabaseClient } from "@/supabase/client";
 import { getBrandProducts } from "@/services/brand-portal";
-import { getDemoOrders } from "@/services/orders";
 import type { DemoBrandSubmission } from "@/types/brand";
 import type { Database, ImageModerationStatus } from "@/types/supabase";
 import type {
@@ -251,15 +250,14 @@ export function getAdminActivityLog() {
 }
 
 export function getAdminOverview() {
-  const orders = getDemoOrders();
   const products = getBrandProducts();
   const brandQueue = getAdminBrandQueue();
 
   return {
-    totalOrders: orders.length,
+    totalOrders: 0,
     totalBrands: demoBrands.length + brandQueue.filter((brand) => brand.status === "approved").length,
     totalProducts: products.length,
-    disputedOrders: orders.filter((order) => order.status === "disputed").length,
+    disputedOrders: 0,
     pendingBrandApprovals: brandQueue.filter((brand) => brand.status === "pending").length,
   };
 }

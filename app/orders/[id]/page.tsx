@@ -12,9 +12,9 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   return (
     <ThreadocalPage
-      eyebrow="Demo order tracking"
+      eyebrow="Order tracking"
       title="Order Tracking"
-      intro="Track a local demo order, confirm pickup, or open a placeholder dispute."
+      intro="Track shipping or local pickup fulfillment, confirm completion, or report an issue."
       breadcrumbs={[{ label: "Account", href: "/account" }, { label: "Orders", href: "/account#orders" }, { label: id }]}
     >
       <OrderTrackingClient orderId={id} />

@@ -2,7 +2,6 @@
 
 import { demoBrands, demoProducts } from "@/lib/demo/marketplace";
 import { getBrandProducts } from "@/services/brand-portal";
-import { getDemoOrders } from "@/services/orders";
 import type { BrandProfile } from "@/types/brand";
 import type { Product } from "@/types/product";
 
@@ -54,15 +53,15 @@ const defaultAddresses: DemoAddress[] = [
 const defaultNotifications: DemoNotification[] = [
   {
     id: "note-welcome",
-    title: "Marketplace demo mode is active",
-    body: "Favorites, orders, addresses, and reviews are saved locally in this browser.",
+    title: "Marketplace account tools are active",
+    body: "Favorites, addresses, and reviews are saved for this browser while order history loads from Threadocal.",
     read: false,
     createdAt: "2026-07-09T00:00:00.000Z",
   },
   {
     id: "note-pickup",
     title: "Pickup flow ready",
-    body: "Completed demo pickup orders can now be reviewed from product pages.",
+    body: "Completed pickup orders can be reviewed from product pages.",
     read: false,
     createdAt: "2026-07-09T00:00:00.000Z",
   },
@@ -229,8 +228,5 @@ export function getAverageRating(productId: string) {
 }
 
 export function canReviewProduct(productId: string) {
-  return getDemoOrders().some(
-    (order) =>
-      order.status === "completed" && order.lines?.some((line) => line.productId === productId),
-  );
+  return Boolean(productId) && false;
 }

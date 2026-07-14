@@ -27,8 +27,8 @@ const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
 const BRAND_LOGO_BUCKET = "brand-logos";
 const BRAND_BANNER_BUCKET = "brand-banners";
 const PRODUCT_IMAGE_BUCKET = "product-images";
-const LOGO_MAX_BYTES = 2 * 1024 * 1024;
-const MARKETPLACE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const MARKETPLACE_IMAGE_MAX_BYTES = 25 * 1024 * 1024;
+const COMPRESSED_IMAGE_MAX_SIDE = 2400;
 
 function slugify(value: string) {
   return value
@@ -54,6 +54,49 @@ function validateImageFile(file: File, maxBytes: number) {
   }
 }
 
+async function compressImageForUpload(file: File) {
+  validateImageFile(file, MARKETPLACE_IMAGE_MAX_BYTES);
+
+  if (typeof window === "undefined" || typeof document === "undefined" || typeof createImageBitmap === "undefined") {
+    return file;
+  }
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, COMPRESSED_IMAGE_MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    canvas.width = width;
+    canvas.height = height;
+
+    if (!context) {
+      bitmap.close();
+      return file;
+    }
+
+    context.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+
+    const compressedBlob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, file.type, file.type === "image/png" ? undefined : 0.82);
+    });
+
+    if (!compressedBlob || compressedBlob.size >= file.size) {
+      return file;
+    }
+
+    return new File([compressedBlob], file.name, {
+      type: file.type,
+      lastModified: Date.now(),
+    });
+  } catch {
+    return file;
+  }
+}
+
 function createStoragePath(ownerId: string, file: File) {
   const extension = getFileExtension(file);
   const safeName = file.name
@@ -68,6 +111,7 @@ function createStoragePath(ownerId: string, file: File) {
 
 async function uploadMarketplaceImage(bucket: string, file: File, maxBytes: number) {
   validateImageFile(file, maxBytes);
+  const uploadFile = await compressImageForUpload(file);
 
   const { brand } = await getOwnerBrand();
 
@@ -76,8 +120,8 @@ async function uploadMarketplaceImage(bucket: string, file: File, maxBytes: numb
   }
 
   const supabase = createBrowserSupabaseClient();
-  const path = createStoragePath(brand.id, file);
-  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+  const path = createStoragePath(brand.id, uploadFile);
+  const { error } = await supabase.storage.from(bucket).upload(path, uploadFile, {
     cacheControl: "3600",
     upsert: false,
   });
@@ -331,16 +375,22 @@ export function updateInventoryQuantity(productId: string, variantId: string, qu
   return nextProducts;
 }
 
-function getDemoDashboardProductsResult(error?: string): BrandDashboardProductsResult {
-  return {
-    mode: "demo",
-    products: getBrandProducts(),
-    error,
-  };
-}
-
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Supabase brand dashboard data is unavailable.";
+  const message = error instanceof Error ? error.message : "Supabase brand dashboard data is unavailable.";
+
+  if (
+    message.includes("brands_email") ||
+    message.includes("column \"email\"") ||
+    message.includes("not-null constraint")
+  ) {
+    return "Threadocal could not save your brand profile because required account details were missing. Please log out, log back in, and try again.";
+  }
+
+  if (message.includes("duplicate key") || message.includes("brands_owner_profile_id_key")) {
+    return "Threadocal found more than one brand profile for this account. Please contact support so we can merge the duplicate brand rows.";
+  }
+
+  return message;
 }
 
 function toNullable(value: string | null | undefined) {
@@ -379,7 +429,7 @@ async function getOwnerBrand(): Promise<{ profile: Awaited<ReturnType<typeof get
   const { data: brands, error } = await supabase
     .from("brands")
     .select("*")
-    .eq("owner_profile_id", profile.id)
+    .or(`owner_profile_id.eq.${profile.id},owner_id.eq.${profile.id}`)
     .order("created_at", { ascending: true })
     .limit(2);
 
@@ -454,12 +504,25 @@ export async function saveBrandDashboardProfile(input: BrandProfileInput): Promi
     });
     const supabase = createBrowserSupabaseClient();
     const now = new Date().toISOString();
+    const { data: authUserData } = await supabase.auth.getUser();
+    const ownerEmail = (profile.email || authUserData.user?.email || "").trim().toLowerCase();
+
+    if (!ownerEmail) {
+      return { mode: "supabase", error: "Threadocal could not save this brand because your account email is missing. Please log out and log back in." };
+    }
+
     const brandPayload = {
+      owner_id: profile.id,
       owner_profile_id: profile.id,
       name: validation.name,
       brand_name: validation.name,
+      username: validation.username,
+      owner_name: profile.full_name,
+      email: ownerEmail,
       slug: validation.username,
       description: toNullable(input.bio),
+      bio: toNullable(input.bio),
+      location: toNullable(input.city),
       logo_url: toNullable(input.logoUrl),
       banner_url: toNullable(input.bannerUrl),
       website_url: toNullable(input.websiteUrl),
@@ -505,8 +568,7 @@ export async function saveBrandDashboardProfile(input: BrandProfileInput): Promi
 export async function uploadBrandDashboardAsset(kind: "logo" | "banner", file: File): Promise<BrandDashboardProfileResult> {
   try {
     const bucket = kind === "logo" ? BRAND_LOGO_BUCKET : BRAND_BANNER_BUCKET;
-    const maxBytes = kind === "logo" ? LOGO_MAX_BYTES : MARKETPLACE_IMAGE_MAX_BYTES;
-    const { brand, url } = await uploadMarketplaceImage(bucket, file, maxBytes);
+    const { brand, url } = await uploadMarketplaceImage(bucket, file, MARKETPLACE_IMAGE_MAX_BYTES);
     const supabase = createBrowserSupabaseClient();
     const update =
       kind === "logo"
@@ -659,7 +721,7 @@ export async function getBrandDashboardProducts(): Promise<BrandDashboardProduct
     const { profile, brand } = await getOwnerBrand();
 
     if (!profile) {
-      return getDemoDashboardProductsResult();
+      return { mode: "supabase", products: [], error: "Sign in as a brand owner to load Supabase products." };
     }
 
     if (!brand) {
@@ -676,7 +738,7 @@ export async function getBrandDashboardProducts(): Promise<BrandDashboardProduct
       products: await getSupabaseBrandProducts(brand),
     };
   } catch (error) {
-    return getDemoDashboardProductsResult(getErrorMessage(error));
+    return { mode: "supabase", products: [], error: getErrorMessage(error) };
   }
 }
 
@@ -738,8 +800,7 @@ export async function saveBrandDashboardProduct(input: BrandProductInput): Promi
     const { profile, brand } = await getOwnerBrand();
 
     if (!profile) {
-      const product = saveBrandProduct(input);
-      return { mode: "demo", product, products: getBrandProducts() };
+      return { mode: "supabase", products: [], error: "Sign in as a brand owner before saving products." };
     }
 
     if (!brand) {
@@ -844,7 +905,7 @@ export async function deleteBrandDashboardProduct(productId: string) {
     const { profile, brand } = await getOwnerBrand();
 
     if (!profile) {
-      return getDemoDashboardProductsResult();
+      return { mode: "supabase" as const, products: [], error: "Sign in as a brand owner before deleting products." };
     }
 
     if (!brand) {
@@ -865,8 +926,8 @@ export async function deleteBrandDashboardProduct(productId: string) {
     };
   } catch (error) {
     return {
-      mode: "demo" as const,
-      products: deleteBrandProduct(productId),
+      mode: "supabase" as const,
+      products: [],
       error: getErrorMessage(error),
     };
   }
@@ -877,7 +938,7 @@ export async function updateBrandDashboardInventoryQuantity(productId: string, v
     const { profile, brand } = await getOwnerBrand();
 
     if (!profile) {
-      return getDemoDashboardProductsResult();
+      return { mode: "supabase" as const, products: [], error: "Sign in as a brand owner before editing inventory." };
     }
 
     if (!brand) {
@@ -901,8 +962,8 @@ export async function updateBrandDashboardInventoryQuantity(productId: string, v
     };
   } catch (error) {
     return {
-      mode: "demo" as const,
-      products: updateInventoryQuantity(productId, variantId, quantity),
+      mode: "supabase" as const,
+      products: [],
       error: getErrorMessage(error),
     };
   }

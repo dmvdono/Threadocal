@@ -3,11 +3,15 @@ import type { FulfillmentMethod } from "@/types/product";
 export type OrderStatus =
   | "order_placed"
   | "brand_preparing"
+  | "shipped"
+  | "delivered"
   | "ready_for_pickup"
   | "picked_up"
   | "completed"
   | "disputed"
   | "cancelled";
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
 export type ShippingAddress = {
   fullName: string;
@@ -24,6 +28,7 @@ export type DemoOrderLine = {
   productName: string;
   brandName: string;
   selectedSize: string | null;
+  selectedColor?: string | null;
   fulfillmentMethod: FulfillmentMethod;
   pickupSlot: string | null;
   quantity: number;
@@ -42,6 +47,8 @@ export type Order = {
   customerId?: string;
   brandId?: string;
   status: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  fulfillmentMethod?: FulfillmentMethod;
   lines?: DemoOrderLine[];
   pickupLocation?: string;
   pickupSlot?: string | null;
@@ -50,6 +57,8 @@ export type Order = {
   dispute?: DemoDispute;
   subtotalCents: number;
   totalCents: number;
+  stripeCheckoutSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
   createdAt: string;
   updatedAt: string;
 };

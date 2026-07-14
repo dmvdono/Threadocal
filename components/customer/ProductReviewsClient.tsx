@@ -105,7 +105,7 @@ export function ProductReviewsClient({ productId }: ProductReviewsClientProps) {
         <button className="primary-link" type="submit" disabled={!reviewAllowed}>
           Save Review
         </button>
-        {!reviewAllowed && <p className="option-note">Complete a demo order with this item before reviewing it.</p>}
+        {!reviewAllowed && <p className="option-note">Complete a Threadocal order with this item before reviewing it.</p>}
         {message && <p className="auth-message success">{message}</p>}
       </form>
     </section>

@@ -33,6 +33,7 @@ function readCartItemsFromStorage(): CartItem[] {
 
     return parsedCart.filter(isStoredCartItem).map((item) => {
       const selectedSize = typeof item.selectedSize === "string" ? item.selectedSize : null;
+      const selectedColor = typeof item.selectedColor === "string" ? item.selectedColor : null;
       const fulfillmentMethod: FulfillmentMethod =
         item.fulfillmentMethod === "local_pickup" ? "local_pickup" : "shipping";
       const pickupSlot = typeof item.pickupSlot === "string" ? item.pickupSlot : null;
@@ -41,9 +42,10 @@ function readCartItemsFromStorage(): CartItem[] {
         id:
           typeof item.id === "string"
             ? item.id
-            : createCartItemId(item.productId, selectedSize, fulfillmentMethod, pickupSlot),
+            : createCartItemId(item.productId, selectedSize, selectedColor, fulfillmentMethod, pickupSlot),
         productId: item.productId,
         selectedSize,
+        selectedColor,
         fulfillmentMethod,
         pickupSlot,
         quantity: item.quantity,
@@ -57,10 +59,11 @@ function readCartItemsFromStorage(): CartItem[] {
 function createCartItemId(
   productId: string,
   selectedSize: string | null,
+  selectedColor: string | null,
   fulfillmentMethod: FulfillmentMethod,
   pickupSlot: string | null,
 ) {
-  return [productId, selectedSize ?? "no-size", fulfillmentMethod, pickupSlot ?? "no-slot"].join(":");
+  return [productId, selectedSize ?? "no-size", selectedColor ?? "no-color", fulfillmentMethod, pickupSlot ?? "no-slot"].join(":");
 }
 
 function writeCartItemsToStorage(items: CartItem[]) {
@@ -80,11 +83,12 @@ export function addProductToCart(
   productId: string,
   quantity = 1,
   selectedSize: string | null = null,
+  selectedColor: string | null = null,
   fulfillmentMethod: FulfillmentMethod = "shipping",
   pickupSlot: string | null = null,
 ) {
   const currentItems = readCartItemsFromStorage();
-  const cartItemId = createCartItemId(productId, selectedSize, fulfillmentMethod, pickupSlot);
+  const cartItemId = createCartItemId(productId, selectedSize, selectedColor, fulfillmentMethod, pickupSlot);
   const existingItem = currentItems.find((item) => item.id === cartItemId);
 
   if (existingItem) {
@@ -95,7 +99,7 @@ export function addProductToCart(
 
   const nextItems = [
     ...currentItems,
-    { id: cartItemId, productId, selectedSize, fulfillmentMethod, pickupSlot, quantity },
+    { id: cartItemId, productId, selectedSize, selectedColor, fulfillmentMethod, pickupSlot, quantity },
   ];
   writeCartItemsToStorage(nextItems);
   return nextItems;

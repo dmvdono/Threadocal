@@ -17,7 +17,7 @@ import {
   type DemoAddress,
   type DemoNotification,
 } from "@/services/customer";
-import { getDemoOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
+import { getCustomerOrders, ORDERS_UPDATED_EVENT } from "@/services/orders";
 import type { Order } from "@/types/order";
 import type { Product } from "@/types/product";
 import { formatCents } from "@/utils/money";
@@ -43,8 +43,12 @@ export function CustomerAccountClient() {
   const [addressDraft, setAddressDraft] = useState<AddressDraft>(emptyAddress);
 
   useEffect(() => {
-    function syncCustomerData() {
-      setOrders(getDemoOrders());
+    async function syncCustomerData() {
+      try {
+        setOrders(await getCustomerOrders());
+      } catch {
+        setOrders([]);
+      }
       setFavoriteProductIds(getFavoriteProductIds());
       setFavoriteBrandSlugs(getFavoriteBrandSlugs());
       setRecentProductIds(getRecentlyViewedProductIds());
@@ -52,7 +56,7 @@ export function CustomerAccountClient() {
       setNotifications(getNotifications());
     }
 
-    queueMicrotask(syncCustomerData);
+    void syncCustomerData();
     window.addEventListener(CUSTOMER_UPDATED_EVENT, syncCustomerData);
     window.addEventListener(ORDERS_UPDATED_EVENT, syncCustomerData);
     window.addEventListener("storage", syncCustomerData);
@@ -112,7 +116,7 @@ export function CustomerAccountClient() {
         </div>
         <div className="stack-list">
           {orders.length === 0 ? (
-            <p>No demo orders yet.</p>
+            <p>No orders yet.</p>
           ) : (
             orders.slice(0, 5).map((order) => (
               <Link href={`${routes.orders}/${order.id}`} key={order.id}>

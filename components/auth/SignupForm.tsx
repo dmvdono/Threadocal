@@ -9,22 +9,21 @@ import { signup } from "@/services/auth";
 import { routes } from "@/utils/routes";
 import { AuthMessage } from "@/components/auth/AuthMessage";
 
-export function SignupForm() {
-  const router = useRouter();
-  const [form, setForm] = useState<SignupInput>(() => {
-    const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
-    const requestedRole = params?.get("role") ?? params?.get("type");
+type SignupFormProps = {
+  initialRole?: SignupInput["role"];
+};
 
-    return {
-      role: requestedRole === "brand_owner" ? "brand_owner" : "customer",
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      city: "",
-      state: "",
-      zipCode: "",
-    };
+export function SignupForm({ initialRole = "customer" }: SignupFormProps) {
+  const router = useRouter();
+  const [form, setForm] = useState<SignupInput>({
+    role: initialRole,
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    city: "",
+    state: "",
+    zipCode: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

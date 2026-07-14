@@ -8,7 +8,9 @@ type AddToCartButtonProps = {
   productId: string;
   quantity?: number;
   requiresSize?: boolean;
+  requiresColor?: boolean;
   selectedSize?: string | null;
+  selectedColor?: string | null;
   fulfillmentMethod?: FulfillmentMethod;
   pickupSlot?: string | null;
 };
@@ -17,7 +19,9 @@ export function AddToCartButton({
   productId,
   quantity = 1,
   requiresSize = false,
+  requiresColor = false,
   selectedSize = null,
+  selectedColor = null,
   fulfillmentMethod = "shipping",
   pickupSlot = null,
 }: AddToCartButtonProps) {
@@ -33,12 +37,17 @@ export function AddToCartButton({
       return;
     }
 
+    if (requiresColor && !selectedColor) {
+      setError("Select a color before adding this item to your cart.");
+      return;
+    }
+
     if (fulfillmentMethod === "local_pickup" && !pickupSlot) {
       setError("Select a pickup time before adding this item to your cart.");
       return;
     }
 
-    addProductToCart(productId, quantity, selectedSize, fulfillmentMethod, pickupSlot);
+    addProductToCart(productId, quantity, selectedSize, selectedColor, fulfillmentMethod, pickupSlot);
     setMessage("Added to cart.");
   }
 

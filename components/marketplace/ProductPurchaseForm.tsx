@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { demoPickupSlots } from "@/lib/demo/marketplace";
 import type { FulfillmentMethod } from "@/types/product";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/marketplace/AddToCartButton";
@@ -19,6 +18,7 @@ export function ProductPurchaseForm({ product }: ProductPurchaseFormProps) {
   const hasSizes = Boolean(product.sizes?.length);
   const hasColors = Boolean(product.colors?.length);
   const canPickup = Boolean(product.pickupAvailable);
+  const pickupSlots = ["Today 4:00 PM - 6:00 PM", "Tomorrow 12:00 PM - 2:00 PM", "Saturday 10:00 AM - 12:00 PM"];
 
   function updateFulfillmentMethod(nextMethod: FulfillmentMethod) {
     setFulfillmentMethod(nextMethod);
@@ -28,7 +28,7 @@ export function ProductPurchaseForm({ product }: ProductPurchaseFormProps) {
       return;
     }
 
-    setPickupSlot(demoPickupSlots[0] ?? null);
+    setPickupSlot(pickupSlots[0] ?? null);
   }
 
   return (
@@ -109,14 +109,14 @@ export function ProductPurchaseForm({ product }: ProductPurchaseFormProps) {
             Local Pickup
           </button>
         </div>
-        {!canPickup && <p className="option-note">Local pickup is not available for this demo item.</p>}
+        {!canPickup && <p className="option-note">Local pickup is not available for this item.</p>}
       </fieldset>
 
       {fulfillmentMethod === "local_pickup" && (
         <fieldset className="option-group">
           <legend>Pickup time</legend>
           <div className="pickup-slot-grid">
-            {demoPickupSlots.map((slot) => (
+            {pickupSlots.map((slot) => (
               <button
                 className={pickupSlot === slot ? "active" : ""}
                 key={slot}
@@ -136,6 +136,8 @@ export function ProductPurchaseForm({ product }: ProductPurchaseFormProps) {
         productId={product.id}
         quantity={quantity}
         requiresSize={hasSizes}
+        requiresColor={hasColors}
+        selectedColor={selectedColor}
         selectedSize={selectedSize}
       />
     </div>

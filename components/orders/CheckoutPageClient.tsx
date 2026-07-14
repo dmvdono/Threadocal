@@ -1,22 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { demoPickupLocation } from "@/lib/demo/marketplace";
-import { getBrandProducts } from "@/services/brand-portal";
 import { getCartItems } from "@/services/cart";
-import { createDemoOrder } from "@/services/orders";
+import { getMarketplaceProductsByIds } from "@/services/products";
+import { createBrowserSupabaseClient } from "@/supabase/client";
 import type { CartItem } from "@/types/product";
 import type { ShippingAddress } from "@/types/order";
 import { formatCents } from "@/utils/money";
 import { routes } from "@/utils/routes";
 
 export function CheckoutPageClient() {
-  const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
-  const [products, setProducts] = useState(() => getBrandProducts());
+  const [products, setProducts] = useState<Awaited<ReturnType<typeof getMarketplaceProductsByIds>>>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     line1: "",
@@ -27,17 +25,26 @@ export function CheckoutPageClient() {
   });
 
   useEffect(() => {
-    queueMicrotask(() => {
-      setItems(getCartItems());
-      setProducts(getBrandProducts());
-    });
+    async function syncCheckout() {
+      const cartItems = getCartItems();
+      setItems(cartItems);
+
+      try {
+        setProducts(await getMarketplaceProductsByIds(cartItems.map((item) => item.productId)));
+        setMessage(null);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Threadocal could not load checkout products.");
+      }
+    }
+
+    void syncCheckout();
   }, []);
 
   const checkoutLines = useMemo(
     () =>
       items
         .map((item) => {
-          const product = products.find((demoProduct) => demoProduct.id === item.productId);
+          const product = products.find((marketplaceProduct) => marketplaceProduct.id === item.productId);
           return product ? { item, product } : null;
         })
         .filter(Boolean),
@@ -55,20 +62,56 @@ export function CheckoutPageClient() {
   const hasPickup = checkoutLines.some((entry) => entry?.item.fulfillmentMethod === "local_pickup");
   const hasShipping = checkoutLines.some((entry) => entry?.item.fulfillmentMethod === "shipping");
 
-  function handlePlaceOrder() {
+  async function handlePlaceOrder() {
     if (hasShipping && (!shippingAddress.fullName.trim() || !shippingAddress.line1.trim() || !shippingAddress.city.trim() || !shippingAddress.state.trim() || !shippingAddress.zipCode.trim())) {
       setMessage("Enter a shipping address before placing a shipping order.");
       return;
     }
 
-    const order = createDemoOrder(hasShipping ? shippingAddress : null);
-
-    if (!order) {
-      setMessage("Your cart is empty. Add a demo product before placing an order.");
+    if (hasShipping && hasPickup) {
+      setMessage("Place shipping and pickup items as separate orders.");
       return;
     }
 
-    router.push(`${routes.orders}/${order.id}`);
+    try {
+      setSubmitting(true);
+      setMessage(null);
+      const supabase = createBrowserSupabaseClient();
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!session?.access_token) {
+        throw new Error("Log in as a customer before checkout.");
+      }
+
+      const response = await fetch("/api/checkout/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          items,
+          shippingAddress: hasShipping ? shippingAddress : null,
+        }),
+      });
+      const payload = await response.json() as { checkoutUrl?: string; error?: string };
+
+      if (!response.ok || !payload.checkoutUrl) {
+        throw new Error(payload.error ?? "Threadocal could not start Stripe checkout.");
+      }
+
+      window.location.assign(payload.checkoutUrl);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Threadocal could not start checkout.");
+      setSubmitting(false);
+    }
   }
 
   if (checkoutLines.length === 0) {
@@ -76,9 +119,9 @@ export function CheckoutPageClient() {
       <section className="market-row">
         <article className="market-panel">
           <h2>No checkout items</h2>
-          <p>Add demo products to your cart before checkout.</p>
+          <p>Add marketplace products to your cart before checkout.</p>
           <Link className="primary-link" href={routes.shop}>
-            Shop Demo Products
+            Shop Products
           </Link>
         </article>
       </section>
@@ -103,6 +146,7 @@ export function CheckoutPageClient() {
                 <span>
                   Qty {entry.item.quantity}
                   {entry.item.selectedSize ? ` · Size ${entry.item.selectedSize}` : ""}
+                  {entry.item.selectedColor ? ` · Color ${entry.item.selectedColor}` : ""}
                 </span>
                 <span>
                   {entry.item.fulfillmentMethod === "local_pickup" ? "Pickup order" : "Shipping order"}
@@ -125,7 +169,7 @@ export function CheckoutPageClient() {
           <>
             <div className="pickup-box">
               <h3>Pickup location</h3>
-              <p>{demoPickupLocation}</p>
+              <p>The brand pickup location will appear on your order after checkout.</p>
             </div>
             <div className="pickup-box">
               <h3>Pickup time</h3>
@@ -148,15 +192,15 @@ export function CheckoutPageClient() {
         )}
         <div className="payment-hold">
           <h3>Payment held by Threadocal</h3>
-          <p>Demo checkout simulates Threadocal holding payment until pickup or shipping fulfillment is complete, or a dispute is resolved.</p>
+          <p>Stripe test-mode checkout authorizes the order while Threadocal tracks pickup or shipping fulfillment.</p>
         </div>
         {message && (
           <p className="auth-message error" role="alert">
             {message}
           </p>
         )}
-        <button className="primary-link" onClick={handlePlaceOrder} type="button">
-          Place Demo Order
+        <button className="primary-link" disabled={submitting} onClick={handlePlaceOrder} type="button">
+          {submitting ? "Opening Stripe..." : "Pay with Stripe"}
         </button>
       </aside>
     </section>

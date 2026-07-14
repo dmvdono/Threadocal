@@ -191,3 +191,43 @@ export async function getPublicProductBySlug(slug: string) {
     ),
   };
 }
+
+export async function getPublicProducts(category?: string) {
+  const supabase = createServerSupabaseClient();
+  let query = supabase
+    .from("products")
+    .select("*")
+    .eq("status", "published")
+    .order("updated_at", { ascending: false });
+
+  if (category && category !== "all") {
+    query = query.eq("category", category);
+  }
+
+  const { data: products } = await query;
+  const productRows = products ?? [];
+
+  if (productRows.length === 0) {
+    return [];
+  }
+
+  const brandIds = Array.from(new Set(productRows.map((product) => product.brand_id)));
+  const { data: brands } = await supabase
+    .from("brands")
+    .select("*")
+    .in("id", brandIds)
+    .eq("approval_status", "approved");
+  const approvedBrands = new Map((brands ?? []).map((brand) => [brand.id, brand]));
+  const visibleProducts = productRows.filter((product) => approvedBrands.has(product.brand_id));
+  const details = await getProductDetails(visibleProducts.map((product) => product.id));
+
+  return visibleProducts.map((product) =>
+    mapProduct(
+      product,
+      approvedBrands.get(product.brand_id)!,
+      details.images.filter((image) => image.product_id === product.id),
+      details.variants.filter((variant) => variant.product_id === product.id),
+      details.inventoryRows,
+    ),
+  );
+}

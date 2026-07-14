@@ -1,9 +1,10 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getBrandDashboardProfile,
+  MARKETPLACE_IMAGE_MAX_BYTES,
   saveBrandDashboardProfile,
   uploadBrandDashboardAsset,
   type BrandProfileInput,
@@ -24,13 +25,25 @@ const emptyProfileForm: BrandProfileInput = {
   zipCode: "",
 };
 
+function formatFileSize(bytes: number) {
+  return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
+}
+
+function selectedFileCopy(file: File | null) {
+  return file ? `${file.name} · ${formatFileSize(file.size)}` : null;
+}
+
 export function BrandProfileEditor() {
   const [form, setForm] = useState<BrandProfileInput>(emptyProfileForm);
   const [verified, setVerified] = useState(false);
   const [logoModerationStatus, setLogoModerationStatus] = useState("pending");
   const [bannerModerationStatus, setBannerModerationStatus] = useState("pending");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [mode, setMode] = useState<"supabase" | "demo">("demo");
+  const logoPreviewUrl = useMemo(() => (logoFile ? URL.createObjectURL(logoFile) : null), [logoFile]);
+  const bannerPreviewUrl = useMemo(() => (bannerFile ? URL.createObjectURL(bannerFile) : null), [bannerFile]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -40,15 +53,15 @@ export function BrandProfileEditor() {
       if (result.brand) {
         setForm({
           name: result.brand.name ?? "",
-          username: result.brand.slug ?? "",
-          bio: result.brand.description ?? "",
+          username: result.brand.username ?? result.brand.slug ?? "",
+          bio: result.brand.bio ?? result.brand.description ?? "",
           logoUrl: result.brand.logo_url ?? "",
           bannerUrl: result.brand.banner_url ?? "",
           websiteUrl: result.brand.website_url ?? "",
           instagramUrl: result.brand.instagram_url ?? "",
           tiktokUrl: result.brand.tiktok_url ?? "",
           youtubeUrl: result.brand.youtube_url ?? "",
-          city: result.brand.city ?? "",
+          city: result.brand.city ?? result.brand.location ?? "",
           state: result.brand.state ?? "",
           zipCode: result.brand.zip_code ?? "",
         });
@@ -64,6 +77,22 @@ export function BrandProfileEditor() {
 
     void loadProfile();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (logoPreviewUrl) {
+        URL.revokeObjectURL(logoPreviewUrl);
+      }
+    };
+  }, [logoPreviewUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (bannerPreviewUrl) {
+        URL.revokeObjectURL(bannerPreviewUrl);
+      }
+    };
+  }, [bannerPreviewUrl]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,10 +111,56 @@ export function BrandProfileEditor() {
       return;
     }
 
-    setMessage(result.mode === "supabase" ? "Brand profile saved." : "Demo mode active. Profile was not saved to Supabase.");
+    let savedBrand = result.brand;
+    const uploadErrors: string[] = [];
+
+    if (result.mode === "supabase" && logoFile) {
+      const uploadResult = await uploadBrandDashboardAsset("logo", logoFile);
+      setMode(uploadResult.mode);
+
+      if (uploadResult.brand) {
+        savedBrand = uploadResult.brand;
+        setLogoFile(null);
+      } else {
+        uploadErrors.push(uploadResult.error ?? "Logo upload failed. Your previous logo was preserved.");
+      }
+    }
+
+    if (result.mode === "supabase" && bannerFile) {
+      const uploadResult = await uploadBrandDashboardAsset("banner", bannerFile);
+      setMode(uploadResult.mode);
+
+      if (uploadResult.brand) {
+        savedBrand = uploadResult.brand;
+        setBannerFile(null);
+      } else {
+        uploadErrors.push(uploadResult.error ?? "Banner upload failed. Your previous banner was preserved.");
+      }
+    }
+
+    if (savedBrand) {
+      setForm({
+        ...form,
+        logoUrl: savedBrand.logo_url ?? form.logoUrl,
+        bannerUrl: savedBrand.banner_url ?? form.bannerUrl,
+      });
+      setLogoModerationStatus(savedBrand.logo_moderation_status);
+      setBannerModerationStatus(savedBrand.banner_moderation_status);
+    }
+
+    if (uploadErrors.length > 0) {
+      setMessage(uploadErrors.join(" "));
+      return;
+    }
+
+    setMessage(
+      result.mode === "supabase"
+        ? "Brand profile saved. New images are pending admin review."
+        : "Demo mode active. Profile was not saved to Supabase.",
+    );
   }
 
-  async function handleAssetUpload(kind: "logo" | "banner", event: ChangeEvent<HTMLInputElement>) {
+  function handleAssetSelect(kind: "logo" | "banner", event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -93,23 +168,19 @@ export function BrandProfileEditor() {
     }
 
     setMessage(null);
-    const result = await uploadBrandDashboardAsset(kind, file);
-    setMode(result.mode);
 
-    if (!result.brand) {
-      setMessage(result.error ?? "Upload failed. Sign in with Supabase to upload images.");
+    if (file.size > MARKETPLACE_IMAGE_MAX_BYTES) {
+      setMessage("Image must be 25MB or smaller.");
       event.target.value = "";
       return;
     }
 
-    setForm({
-      ...form,
-      logoUrl: result.brand.logo_url ?? form.logoUrl,
-      bannerUrl: result.brand.banner_url ?? form.bannerUrl,
-    });
-    setLogoModerationStatus(result.brand.logo_moderation_status);
-    setBannerModerationStatus(result.brand.banner_moderation_status);
-    setMessage(`${kind === "logo" ? "Logo" : "Banner"} uploaded for admin review.`);
+    if (kind === "logo") {
+      setLogoFile(file);
+    } else {
+      setBannerFile(file);
+    }
+
     event.target.value = "";
   }
 
@@ -127,13 +198,23 @@ export function BrandProfileEditor() {
         <div className="auth-form-grid">
           <label>
             Logo image
-            <input accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => handleAssetUpload("logo", event)} type="file" />
-            <span className="option-note">2MB max · {form.logoUrl ? `Review: ${logoModerationStatus}` : "No logo uploaded"}</span>
+            <input accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => handleAssetSelect("logo", event)} type="file" />
+            {(logoPreviewUrl || form.logoUrl) && (
+              <span className="upload-preview">
+                <img src={logoPreviewUrl ?? form.logoUrl} alt="Brand logo preview" />
+              </span>
+            )}
+            <span className="option-note">25MB max · {selectedFileCopy(logoFile) ?? (form.logoUrl ? `Review: ${logoModerationStatus}` : "No logo uploaded")}</span>
           </label>
           <label>
             Banner image
-            <input accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => handleAssetUpload("banner", event)} type="file" />
-            <span className="option-note">5MB max · {form.bannerUrl ? `Review: ${bannerModerationStatus}` : "No banner uploaded"}</span>
+            <input accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => handleAssetSelect("banner", event)} type="file" />
+            {(bannerPreviewUrl || form.bannerUrl) && (
+              <span className="upload-preview banner-preview">
+                <img src={bannerPreviewUrl ?? form.bannerUrl} alt="Brand banner preview" />
+              </span>
+            )}
+            <span className="option-note">25MB max · {selectedFileCopy(bannerFile) ?? (form.bannerUrl ? `Review: ${bannerModerationStatus}` : "No banner uploaded")}</span>
           </label>
           <label>
             Verified

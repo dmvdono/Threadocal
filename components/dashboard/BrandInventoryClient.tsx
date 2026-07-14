@@ -15,7 +15,7 @@ export function BrandInventoryClient() {
       setProducts(result.products);
 
       if (result.error) {
-        setMessage(result.mode === "demo" ? `Demo mode active: ${result.error}` : result.error);
+        setMessage(result.error);
       }
     }
 
@@ -27,7 +27,7 @@ export function BrandInventoryClient() {
     setProducts(result.products);
 
     if (result.error) {
-      setMessage(result.mode === "demo" ? `Demo mode active: ${result.error}` : result.error);
+      setMessage(result.error);
     }
   }
 

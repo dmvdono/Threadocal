@@ -1,0 +1,54 @@
+name: Threadocal Regression
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      run_full_regression:
+        description: "Run the full Playwright regression suite"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+  schedule:
+    - cron: "17 8 * * *"
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+    - name: Lint
+      run: npm run lint
+    - name: Typecheck
+      run: npx tsc --noEmit
+    - name: Build
+      run: npm run build
+    - name: Run Playwright smoke tests
+      run: npm run test:e2e:smoke -- --project=chromium
+    - name: Run full Playwright regression
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_full_regression == 'true' }}
+      run: npm run test:e2e -- --project=chromium
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+    - uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: playwright-failure-artifacts
+        path: test-results/
+        retention-days: 30

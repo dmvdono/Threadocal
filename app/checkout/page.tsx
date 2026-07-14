@@ -4,9 +4,9 @@ import { CheckoutPageClient } from "@/components/orders/CheckoutPageClient";
 export default function CheckoutPage() {
   return (
     <ThreadocalPage
-      eyebrow="Demo checkout"
+      eyebrow="Checkout"
       title="Checkout"
-      intro="Place a local demo order with shipping or pickup details stored in this browser."
+      intro="Choose shipping or local pickup and complete payment with Stripe test mode."
       breadcrumbs={[{ label: "Cart", href: "/cart" }, { label: "Checkout" }]}
     >
       <CheckoutPageClient />

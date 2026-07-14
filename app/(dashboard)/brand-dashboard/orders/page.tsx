@@ -5,9 +5,9 @@ import { BrandOrdersClient } from "@/components/orders/BrandOrdersClient";
 export default function BrandOrdersPage() {
   return (
     <ThreadocalPage
-      eyebrow="Demo brand fulfillment"
+      eyebrow="Brand fulfillment"
       title="Brand Orders"
-      intro="Manage local demo orders from this browser. Brands can move orders through preparation and mark pickup orders ready."
+      intro="Manage paid Supabase orders through pickup and shipping fulfillment."
       breadcrumbs={[{ label: "Brand Dashboard", href: "/brand-dashboard" }, { label: "Orders" }]}
     >
       <BrandPortalNav />

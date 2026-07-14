@@ -6,7 +6,7 @@ export default function BrandProductsPage() {
     <ThreadocalPage
       eyebrow="Product management"
       title="Products"
-      intro="Add, edit, and remove demo products with localStorage persistence."
+      intro="Add, edit, duplicate, and remove Supabase-backed marketplace products."
       breadcrumbs={[{ label: "Brand Dashboard", href: "/brand-dashboard" }, { label: "Products" }]}
     >
       <BrandProductsClient />

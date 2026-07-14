@@ -39,6 +39,7 @@
   "exclude": [
     "node_modules",
     ".next/types/**/* 2.ts",
+    ".next/types/**/* 3.ts",
     ".next/dev/types/**/*.ts",
     ".next-build-check/dev/types/**/*.ts",
     ".next-auth-test/dev/types/**/*.ts"

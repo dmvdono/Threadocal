@@ -3,31 +3,22 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { getRedirectPathForRole, isDashboardRouteForRole, login } from "@/services/auth";
 import { routes } from "@/utils/routes";
 import { AuthMessage } from "@/components/auth/AuthMessage";
 
-export function LoginForm() {
+type LoginFormProps = {
+  requestedRedirect?: string | null;
+  requestedRole?: "customer" | "brand_owner";
+};
+
+export function LoginForm({ requestedRedirect = null, requestedRole = "customer" }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const requestedRedirect = useMemo(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    return new URLSearchParams(window.location.search).get("redirect");
-  }, []);
-  const requestedRole = useMemo(() => {
-    if (typeof window === "undefined") {
-      return "customer";
-    }
-
-    return new URLSearchParams(window.location.search).get("role") === "brand_owner" ? "brand_owner" : "customer";
-  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

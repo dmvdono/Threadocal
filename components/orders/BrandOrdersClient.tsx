@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getDemoOrders, ORDERS_UPDATED_EVENT, updateDemoOrderStatus } from "@/services/orders";
+import { getBrandOrders, ORDERS_UPDATED_EVENT, updateOrderStatus } from "@/services/orders";
 import type { Order, OrderStatus } from "@/types/order";
 import { formatCents } from "@/utils/money";
 import { routes } from "@/utils/routes";
@@ -16,7 +16,8 @@ const pickupStatuses: { label: string; status: OrderStatus }[] = [
 const shippingStatuses: { label: string; status: OrderStatus }[] = [
   { label: "Shipping order placed", status: "order_placed" },
   { label: "Preparing shipment", status: "brand_preparing" },
-  { label: "Shipping complete", status: "completed" },
+  { label: "Shipped", status: "shipped" },
+  { label: "Delivered", status: "delivered" },
 ];
 
 function hasPickupLine(order: Order) {
@@ -37,35 +38,45 @@ function getStatusLabel(order: Order) {
 
 export function BrandOrdersClient() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [trackingNumbers, setTrackingNumbers] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    function syncOrders() {
-      setOrders(getDemoOrders());
+    async function syncOrders() {
+      try {
+        setOrders(await getBrandOrders());
+        setMessage(null);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Threadocal could not load brand orders.");
+      }
     }
 
-    queueMicrotask(syncOrders);
+    void syncOrders();
     window.addEventListener(ORDERS_UPDATED_EVENT, syncOrders);
-    window.addEventListener("storage", syncOrders);
 
     return () => {
       window.removeEventListener(ORDERS_UPDATED_EVENT, syncOrders);
-      window.removeEventListener("storage", syncOrders);
     };
   }, []);
 
-  function handleStatusUpdate(orderId: string, status: OrderStatus) {
-    updateDemoOrderStatus(orderId, status);
-    setOrders(getDemoOrders());
+  async function handleStatusUpdate(orderId: string, status: OrderStatus) {
+    try {
+      await updateOrderStatus(orderId, status, trackingNumbers[orderId] ?? null);
+      setOrders(await getBrandOrders());
+      setMessage("Order updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Threadocal could not update this order.");
+    }
   }
 
   if (orders.length === 0) {
     return (
       <section className="market-row">
         <article className="market-panel">
-          <h2>No demo orders yet</h2>
-          <p>Create a local demo order from the shop, then return here to manage fulfillment as the brand.</p>
+          <h2>No orders yet</h2>
+          <p>Paid Supabase orders for your brand will appear here.</p>
           <Link className="primary-link" href={routes.shop}>
-            Shop Demo Products
+            Shop Products
           </Link>
         </article>
       </section>
@@ -74,6 +85,11 @@ export function BrandOrdersClient() {
 
   return (
     <section className="brand-orders">
+      {message && (
+        <p className="auth-message" role="status">
+          {message}
+        </p>
+      )}
       {orders.map((order) => {
         const pickupOrder = hasPickupLine(order);
         const shippingOrder = hasShippingLine(order);
@@ -84,6 +100,7 @@ export function BrandOrdersClient() {
             <p className="eyebrow">{getStatusLabel(order)}</p>
             <h2>{pickupOrder ? "Pickup order" : "Shipping order"} {order.id}</h2>
             <p>Total {formatCents(order.totalCents)}</p>
+            <p>Payment {order.paymentStatus ?? "pending"}</p>
             {order.dispute && (
               <p className="auth-message error" role="status">
                 Dispute: {order.dispute.reason}
@@ -98,6 +115,7 @@ export function BrandOrdersClient() {
                 <span>
                   Qty {line.quantity}
                   {line.selectedSize ? ` · Size ${line.selectedSize}` : ""}
+                  {line.selectedColor ? ` · Color ${line.selectedColor}` : ""}
                   {line.fulfillmentMethod === "local_pickup" ? " · Pickup order" : " · Shipping order"}
                 </span>
               </p>
@@ -117,6 +135,16 @@ export function BrandOrdersClient() {
                     : "No shipping address saved"}
                 </span>
               </p>
+            )}
+            {shippingOrder && (
+              <label className="inline-field">
+                Tracking number
+                <input
+                  onChange={(event) => setTrackingNumbers({ ...trackingNumbers, [order.id]: event.target.value })}
+                  placeholder="Add tracking when shipped"
+                  value={trackingNumbers[order.id] ?? order.trackingNumber ?? ""}
+                />
+              </label>
             )}
           </div>
 

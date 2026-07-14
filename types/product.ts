@@ -63,6 +63,7 @@ export type CartItem = {
   id: string;
   productId: string;
   selectedSize: string | null;
+  selectedColor: string | null;
   fulfillmentMethod: FulfillmentMethod;
   pickupSlot: string | null;
   quantity: number;

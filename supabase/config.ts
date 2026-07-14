@@ -50,6 +50,10 @@ export function getSupabasePublicUrl() {
   return process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 }
 
+export function getSupabaseServiceRoleKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+}
+
 export function getSupabasePublicEnvStatus(): SupabasePublicEnvStatus {
   const supabaseUrl = getSupabasePublicUrl();
   const supabasePublicKey = getSupabasePublicKey();
