@@ -82,6 +82,14 @@ function validateShippingAddress(address: ShippingAddress | null | undefined) {
   };
 }
 
+async function deletePendingCheckoutOrder(
+  admin: Awaited<ReturnType<typeof requireApiAuth>>["admin"],
+  orderId: string,
+) {
+  await admin.from("order_items").delete().eq("order_id", orderId);
+  await admin.from("orders").delete().eq("id", orderId).eq("payment_status", "pending");
+}
+
 export async function POST(request: Request) {
   try {
     const { admin, profile } = await requireApiAuth(request);
@@ -246,15 +254,19 @@ export async function POST(request: Request) {
     );
 
     if (itemError) {
+      await deletePendingCheckoutOrder(admin, order.id);
       throw new Error(itemError.message);
     }
 
     const baseUrl = getBaseUrl(request);
     const sessionBody = new URLSearchParams();
     sessionBody.set("mode", "payment");
-    sessionBody.set("success_url", `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`);
+    sessionBody.set("success_url", `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`);
     sessionBody.set("cancel_url", `${baseUrl}/checkout?cancelled=1`);
     sessionBody.set("client_reference_id", order.id);
+    if (profile.email) {
+      sessionBody.set("customer_email", profile.email);
+    }
     sessionBody.set("metadata[order_id]", order.id);
     sessionBody.set("metadata[customer_profile_id]", profile.id);
     orderItems.forEach((entry, index) => {
@@ -265,10 +277,17 @@ export async function POST(request: Request) {
       sessionBody.set(`line_items[${index}][price_data][product_data][metadata][product_id]`, entry.product.id);
     });
 
-    const session = await stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
-      method: "POST",
-      body: sessionBody,
-    });
+    let session: StripeCheckoutSession;
+
+    try {
+      session = await stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
+        method: "POST",
+        body: sessionBody,
+      });
+    } catch (stripeError) {
+      await deletePendingCheckoutOrder(admin, order.id);
+      throw stripeError;
+    }
 
     const { error: sessionError } = await admin
       .from("orders")

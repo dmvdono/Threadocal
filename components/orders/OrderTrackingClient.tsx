@@ -26,9 +26,10 @@ const pickupSteps: { label: string; status: OrderStatus }[] = [
 
 type OrderTrackingClientProps = {
   orderId: string;
+  confirmed?: boolean;
 };
 
-export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
+export function OrderTrackingClient({ orderId, confirmed = false }: OrderTrackingClientProps) {
   const [order, setOrder] = useState<Order | null>(null);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
@@ -155,6 +156,11 @@ export function OrderTrackingClient({ orderId }: OrderTrackingClientProps) {
       </div>
 
       <aside className="cart-summary">
+        {confirmed && (
+          <p className="auth-message success" role="status">
+            Payment confirmed. Your order has been created in Threadocal.
+          </p>
+        )}
         <h2>{hasPickup ? "Pickup confirmation" : "Shipping details"}</h2>
         {hasPickup ? (
           <>

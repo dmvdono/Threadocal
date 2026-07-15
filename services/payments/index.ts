@@ -12,8 +12,8 @@ function getStripeSecretKey() {
     throw new Error("Missing STRIPE_SECRET_KEY. Add a Stripe test-mode secret key before creating checkout sessions.");
   }
 
-  if (!key.startsWith("sk_test_") && process.env.ALLOW_STRIPE_LIVE_MODE !== "true") {
-    throw new Error("Threadocal checkout is locked to Stripe test mode. Use sk_test_ or set ALLOW_STRIPE_LIVE_MODE=true intentionally.");
+  if (!key.startsWith("sk_test_")) {
+    throw new Error("Threadocal checkout is locked to Stripe test mode. Use a Stripe sandbox secret key that starts with sk_test_.");
   }
 
   return key;

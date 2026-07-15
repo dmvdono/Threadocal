@@ -78,9 +78,7 @@ test.describe("Stripe and Supabase order lifecycle", () => {
     await page.getByLabel(/CVC/).fill("123");
     await page.getByLabel(/Cardholder name/).fill("Threadocal E2E Customer");
     await page.getByRole("button", { name: /Pay/ }).click();
-    await expect(page).toHaveURL(/checkout\/success/);
-    await expect(page.getByRole("link", { name: "Track Order" })).toBeVisible({ timeout: 30000 });
-    await page.getByRole("link", { name: "Track Order" }).click();
+    await expect(page).toHaveURL(/orders\/.+confirmed=1/, { timeout: 30000 });
     await expect(page.locator("body")).toContainText(/Shipping order/i);
 
     const orderUrl = page.url();
@@ -113,9 +111,7 @@ test.describe("Stripe and Supabase order lifecycle", () => {
     await page.getByLabel(/CVC/).fill("123");
     await page.getByLabel(/Cardholder name/).fill("Threadocal E2E Customer");
     await page.getByRole("button", { name: /Pay/ }).click();
-    await expect(page).toHaveURL(/checkout\/success/);
-    await expect(page.getByRole("link", { name: "Track Order" })).toBeVisible({ timeout: 30000 });
-    await page.getByRole("link", { name: "Track Order" }).click();
+    await expect(page).toHaveURL(/orders\/.+confirmed=1/, { timeout: 30000 });
     await expect(page.locator("body")).toContainText(/Pickup order/i);
 
     const orderUrl = page.url();

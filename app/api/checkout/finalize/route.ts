@@ -83,8 +83,8 @@ export async function POST(request: Request) {
       return Response.json({ error: "Stripe payment is not complete yet." }, { status: 402 });
     }
 
-    if (order.payment_status !== "paid") {
-      await decrementInventoryForOrder(admin, order.id);
+    if (order.payment_status === "paid") {
+      return Response.json({ orderId: order.id, order });
     }
 
     const { data: updatedOrder, error: updateError } = await admin
@@ -96,12 +96,29 @@ export async function POST(request: Request) {
         updated_at: new Date().toISOString(),
       })
       .eq("id", order.id)
+      .eq("payment_status", "pending")
       .select("*")
       .maybeSingle();
 
     if (updateError) {
       throw new Error(updateError.message);
     }
+
+    if (!updatedOrder) {
+      const { data: currentOrder, error: currentOrderError } = await admin
+        .from("orders")
+        .select("*")
+        .eq("id", order.id)
+        .maybeSingle();
+
+      if (currentOrderError) {
+        throw new Error(currentOrderError.message);
+      }
+
+      return Response.json({ orderId: order.id, order: currentOrder });
+    }
+
+    await decrementInventoryForOrder(admin, order.id);
 
     return Response.json({ orderId: order.id, order: updatedOrder });
   } catch (error) {

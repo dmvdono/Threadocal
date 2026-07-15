@@ -192,7 +192,7 @@ export function CheckoutPageClient() {
         )}
         <div className="payment-hold">
           <h3>Payment held by Threadocal</h3>
-          <p>Stripe test-mode checkout authorizes the order while Threadocal tracks pickup or shipping fulfillment.</p>
+          <p>Stripe test-mode checkout processes the payment while Threadocal tracks pickup or shipping fulfillment.</p>
         </div>
         {message && (
           <p className="auth-message error" role="alert">
